@@ -1,11 +1,12 @@
-(int) load_data() inline {                 ;; read function declaration - returns int as result
+(int, int) load_data() inline {                 ;; read function declaration - returns int as result
     var ds = get_data().begin_parse();       ;; load the storage cell and start parsing as a slice
-    return (ds~load_uint(64));               ;; read a 64 bit unsigned int from the slice and return it
+    return (ds~load_uint(64), ds~load_uint(64));               ;; read a 64 bit unsigned int from the slice and return it
 }
 
-() save_data(int counter) impure inline {  ;; write function declaration - takes an int as arg
+() save_data(int counter, int seqno) impure inline {  ;; write function declaration - takes an int as arg
     set_data(begin_cell()                    ;; store the storage cell and create it with a builder
             .store_uint(counter, 64)               ;; write a 64 bit unsigned int to the builder
+            .store_uint(seqno, 64)
             .end_cell());                          ;; convert the builder to a cell
 }
 
@@ -14,13 +15,29 @@
         return ();                              ;; return successfully and accept an empty message
     }
     int op = in_msg_body~load_uint(32);       ;; parse the operation type encoded in the beginning of msg body
-    var (counter) = load_data();              ;; call our read utility function to load values from storage
+    var (counter, seqno) = load_data();              ;; call our read utility function to load values from storage
     if (op == 1) {                            ;; handle op #1 = increment
-        save_data(counter + 1);                 ;; call our write utility function to persist values to storage
+        save_data(counter + 1, seqno);                 ;; call our write utility function to persist values to storage
     }
 }
 
+() recv_external(slice in_msg) impure {  ;; well known function signature
+    var msg_seqno = in_msg~load_uint(32);
+    int n = in_msg~load_uint(32);
+    var (counter, stored_seqno) = load_data();
+
+    throw_unless(39, msg_seqno == stored_seqno);
+    accept_message();
+
+    save_data(counter + n, stored_seqno + 1);
+}
+
 int counter() method_id {        ;; getter declaration - returns int as result
-    var (counter) = load_data();   ;; call our read utility function to load value
+    var (counter, _) = load_data();   ;; call our read utility function to load value
     return counter;
+}
+
+int seqno() method_id {        ;; getter declaration - returns int as result
+    var (_, seqno) = load_data();   ;; call our read utility function to load value
+    return seqno;
 }

@@ -3,6 +3,7 @@ import { TonClient, Address } from "ton";
 import Counter from "./Counter"; // this is the interface class we just implemented
 
 export async function readState(contractAddress: string) {
+    console.log(`\nRead state`)
     // initialize ton rpc client on testnet
     const endpoint = await getHttpEndpoint({ network: "testnet" });
     const client = new TonClient({ endpoint });
@@ -14,5 +15,8 @@ export async function readState(contractAddress: string) {
 
     // call the getter on chain
     const counterValue = await counterContract.getCounter();
-    console.log("readState: value=", counterValue.toString());
+    console.log("counter =", counterValue.toString());
+
+    const seqnoValue = await counterContract.getSeqno();
+    console.log("seqno =", seqnoValue.toString());
 }

@@ -5,26 +5,27 @@ import { TonClient, Cell, WalletContractV4 } from "ton";
 import Counter from "./Counter"; // this is the interface class from step 7
 
 export async function deploy(mnemonic: string) {
+    console.log(`\nDeploy`);
     // initialize ton rpc client on testnet
     const endpoint = await getHttpEndpoint({ network: "testnet" });
     const client = new TonClient({ endpoint });
 
     // prepare Counter's initial code and data cells for deployment
     const counterCode = Cell.fromBoc(fs.readFileSync("counter.cell"))[0]; // compilation output from step 6
-    const initialCounterValue = Date.now(); // to avoid collisions use current number of milliseconds since epoch as initial value
+    const initialCounterValue = 10;
     const counter = Counter.createForDeploy(counterCode, initialCounterValue);
 
     // exit if contract is already deployed
-    console.log("deploy: contract address:", counter.address.toString());
+    console.log("contract address:", counter.address.toString());
     if (await client.isContractDeployed(counter.address)) {
-        return console.log("deploy: Counter already deployed");
+        return console.log("Counter already deployed");
     }
 
     // open wallet v4 (notice the correct wallet version here)
     const key = await mnemonicToWalletKey(mnemonic.split(" "));
     const wallet = WalletContractV4.create({ publicKey: key.publicKey, workchain: 0 });
     if (!await client.isContractDeployed(wallet.address)) {
-        return console.log("deploy: wallet is not deployed");
+        return console.log("wallet is not deployed");
     }
 
     // open wallet and read the current seqno of the wallet
@@ -39,11 +40,11 @@ export async function deploy(mnemonic: string) {
     // wait until confirmed
     let currentSeqno = seqno;
     while (currentSeqno == seqno) {
-        console.log("deploy: waiting for deploy transaction to confirm...");
+        console.log("waiting for deploy transaction to confirm...");
         await sleep(1500);
         currentSeqno = await walletContract.getSeqno();
     }
-    console.log("deploy: deploy transaction confirmed!");
+    console.log("deploy transaction confirmed!");
 }
 
 function sleep(ms: number) {

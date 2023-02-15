@@ -5,6 +5,7 @@ export default class Counter implements Contract {
     static createForDeploy(code: Cell, initialCounterValue: number): Counter {
         const data = beginCell()
             .storeUint(initialCounterValue, 64)
+            .storeUint(0, 64) // initial seqno value
             .endCell();
         const workchain = 0; // deploy to workchain 0
         const address = contractAddress(workchain, { code, data });
@@ -23,6 +24,11 @@ export default class Counter implements Contract {
         return stack.readBigNumber();
     }
 
+    async getSeqno(provider: ContractProvider) {
+        const { stack } = await provider.get("seqno", []);
+        return stack.readBigNumber();
+    }
+
     async sendIncrement(provider: ContractProvider, via: Sender) {
         const messageBody = beginCell()
             .storeUint(1, 32) // op (op #1 = increment)
@@ -32,6 +38,15 @@ export default class Counter implements Contract {
             value: "0.002", // send 0.002 TON for gas
             body: messageBody
         });
+    }
+
+    async sendExternalIncrement(provider: ContractProvider, num: number) {
+        const seqno = await this.getSeqno(provider);
+        const messageBody = beginCell()
+            .storeUint(seqno, 32) // op (op #1 = increment)
+            .storeUint(num, 32) // query id
+            .endCell();
+        await provider.external(messageBody);
     }
 
     constructor(readonly address: Address, readonly init?: { code: Cell, data: Cell }) {}
