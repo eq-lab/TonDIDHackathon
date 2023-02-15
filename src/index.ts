@@ -1,0 +1,18 @@
+import {deploy} from "./deploy";
+import {readState} from "./readState";
+import {call} from "./call";
+import {mnemonicToWalletKey} from "ton-crypto";
+import {WalletContractV4} from "ton";
+
+async function main(){
+    // open wallet v4 (notice the correct wallet version here)
+    const mnemonic = "casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle"; // your 24 secret words (replace ... with the rest of the words)
+
+    // await deploy(mnemonic)
+    const contractAddress = 'EQCy1f8NRgMSbYqrxvmotDcGDWLrp-zDuzju3KwiHOhxaMsN';
+    await readState(contractAddress);
+    await call(mnemonic, contractAddress);
+    await readState(contractAddress);
+}
+
+main()
