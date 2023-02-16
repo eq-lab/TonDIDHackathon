@@ -8,7 +8,11 @@
 
 #### Compile FunC contract
 ```bash
-npx func-js stdlib.fc counter.fc --boc counter.cell
+npx func-js contracts/func-lib/stdlib.fc contracts/counter.fc --boc bin/counter.cell
+```
+#### Generate boc from fift script
+```bash
+fift -Icontracts/fift-lib -s contracts/externalIncrement.fif EQCqzqAl5Yg4sj0jk5BcX8qg24cunlsOs_2xPHJ-xwwqejhM 2 4
 ```
 
 #### Deploy, read state, internalCall method

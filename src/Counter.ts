@@ -46,6 +46,8 @@ export default class Counter implements Contract {
             .storeUint(seqno, 32) // op (op #1 = increment)
             .storeUint(num, 32) // query id
             .endCell();
+
+        console.log(`EXTERNAL: ${messageBody.toBoc().toString('hex')}`);
         await provider.external(messageBody);
     }
 

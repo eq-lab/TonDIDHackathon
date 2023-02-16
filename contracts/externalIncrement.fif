@@ -1,0 +1,15 @@
+"fift-lib/TonUtil.fif" include
+
+$1 parse-smc-addr
+
+=: bounce1
+2=: dest_addr
+
+$2 parse-int =: seqno
+$3 parse-int =: num
+
+<b b{1000100} s, dest_addr addr, 0 Gram, 0 1 u, seqno 32 u, num 32 u, b>
+
+ dup ."External message  is " <s csr. cr
+ 2 boc+>B dup Bx. cr
+ "bin/external-increment.boc" tuck B>file

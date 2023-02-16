@@ -11,7 +11,7 @@ export async function deploy(mnemonic: string) {
     const client = new TonClient({ endpoint });
 
     // prepare Counter's initial code and data cells for deployment
-    const counterCode = Cell.fromBoc(fs.readFileSync("counter.cell"))[0]; // compilation output from step 6
+    const counterCode = Cell.fromBoc(fs.readFileSync("bin/counter.cell"))[0]; // compilation output from step 6
     const initialCounterValue = 10;
     const counter = Counter.createForDeploy(counterCode, initialCounterValue);
 
