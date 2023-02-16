@@ -12,7 +12,7 @@ npx func-js contracts/func-lib/stdlib.fc contracts/counter.fc --boc bin/counter.
 ```
 #### Generate boc from fift script
 ```bash
-fift -Icontracts/fift-lib -s contracts/externalIncrement.fif EQCqzqAl5Yg4sj0jk5BcX8qg24cunlsOs_2xPHJ-xwwqejhM 2 4
+fift -Icontracts/fift-lib -s contracts/externalIncrement.fif EQCqzqAl5Yg4sj0jk5BcX8qg24cunlsOs_2xPHJ-xwwqejhM 1 5
 ```
 
 #### Deploy, read state, internalCall method

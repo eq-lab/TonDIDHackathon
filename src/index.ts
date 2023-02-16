@@ -11,15 +11,15 @@ async function main(){
     // await deploy(mnemonic)
     const contractAddress = 'EQCqzqAl5Yg4sj0jk5BcX8qg24cunlsOs_2xPHJ-xwwqejhM';
 
-    // await readState(contractAddress);
-    // await internalCall(mnemonic, contractAddress);
     await readState(contractAddress);
-    //
+    await internalCall(mnemonic, contractAddress);
+    await readState(contractAddress);
+
     await externalCall(contractAddress);
     await readState(contractAddress);
 
-    // await sendRawBoc(contractAddress);
-    // await readState(contractAddress);
+    await sendRawBoc(contractAddress);
+    await readState(contractAddress);
 }
 
 main()
