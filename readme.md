@@ -6,6 +6,24 @@
 5. Replace mnemonic in `index.ts` file
 
 
+#### Build fift interpretator on M1
+1. Compile from source:
+```bash
+git clone https://github.com/ton-blockchain/ton.git
+cd ton
+git submodules init
+git submodules update
+brew install openssl
+brew install gsl
+brew install libmicrohttpd
+brew install ninja
+mkdir build
+cd build
+cmake -GNinja -DOPENSSL_FOUND=1 -DOPENSSL_INCLUDE_DIR=/opt/homebrew/opt/openssl@3/include -DOPENSSL_CRYPTO_LIBRARY=/opt/homebrew/opt/openssl@3/lib/libcrypto.a -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=13.1 -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=Release ..
+ninja fift
+```
+2. Add `ton/build/crypto` to env
+
 #### Compile FunC contract
 ```bash
 npx func-js contracts/func-lib/stdlib.fc contracts/counter.fc --boc bin/counter.cell
