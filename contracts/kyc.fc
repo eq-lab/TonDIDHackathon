@@ -1,0 +1,39 @@
+cell load_accounts_data() {
+	cell data = get_data();
+	slice ds = data.begin_parse();
+	if (ds.slice_empty?()) {
+		return new_dict();
+	} else {
+		return data;
+	}
+}
+
+slice recv_external(slice account) impure {
+    (int parsed_account, _) = account.parse_std_addr();
+	cell accounts_data = load_accounts_data();
+    (slice status, int success) = accounts_data.udict_get?(256, parsed_account);
+
+	if (success == 0) {
+		status = "Under Process";
+		accounts_data~udict_set(256, parsed_account, status);
+	    set_data(accounts_data);
+	}
+
+	return status;
+}
+
+() recv_internal(slice account, slice new_status) impure {
+    (int parsed_account, _) = account.parse_std_addr();
+    cell accounts_data = load_accounts_data();
+    accounts_data~udict_set(256, parsed_account, new_status);
+	set_data(accounts_data);
+}
+
+slice get_accounts_status(slice account) method_id {
+    (int parsed_account, _) = account.parse_std_addr();
+	cell accounts_data = load_accounts_data();
+	(slice status, int success) = accounts_data.udict_get?(256, parsed_account);
+	throw_unless(98, success);
+
+	return status;
+}
