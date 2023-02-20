@@ -1,28 +1,41 @@
 cell load_accounts_data() {
-	cell data = get_data();
-	slice ds = data.begin_parse();
-	return ds.preload_ref();
+	slice data = get_data().begin_parse();
+	return data.preload_ref();
 }
 
-slice recv_external(slice account) impure {
+(int, int, int) load_data() {
+    var data = get_data().begin_parse();
+    return (data~load_uint(256), data~load_uint(256), data~load_uint(256));
+}
+
+() save_data(int seqno, int provider, int fee, cell account_data) impure inline {
+    set_data(
+        begin_cell()
+            .store_uint(seqno, 256)
+            .store_uint(provider, 256)
+            .store_uint(fee, 256)
+            .store_dict(account_data)
+            .end_cell()
+    );
+}
+
+() recv_external(slice account) impure {
+    int msg_seqno = 0;
+    var (stored_seqno, provider, fee) = load_data();
+    throw_unless(32, stored_seqno == msg_seqno);
+
     (int parsed_account, _) = account.parse_std_addr();
 	cell accounts_data = load_accounts_data();
     int action = 0;
 
-    if (action == 0) { ;; init contract 
-        ;; throw_unless(32, stored_seqno == 0);
+    if (action == 0) { ;; init contract
+        int seqno = 1;
         int provider = 0;
         int fee = 0;
         accept_message();
 
-        cell init_data = begin_cell()
-            .store_uint(provider, 256)
-            .store_uint(fee, 256)
-            .store_dict(new_dict())
-            .end_cell();
-    
-        set_data(init_data);
-        return "";
+        save_data(seqno + 1, provider, fee, new_dict());
+        return ();
     }
 
     accept_message();
@@ -31,10 +44,8 @@ slice recv_external(slice account) impure {
 	if (success == 0) {
 		status = "Under Process";
 		accounts_data~udict_set(256, parsed_account, status);
-	    set_data(accounts_data);
+	    save_data(stored_seqno + 1, provider, fee, accounts_data);
 	}
-
-	return status;
 }
 
 () recv_internal(slice account, slice new_status) impure {
@@ -54,16 +65,17 @@ slice get_accounts_status(slice account) method_id {
 	return status;
 }
 
-int get_provider() method_id {
-    cell data = get_data();
-    slice ds = data.begin_parse();
+int get_seqno() method_id {
+    var (seqno, _, _) = load_data();
+    return seqno;
+}
 
-	return ds.preload_uint(256);
+int get_provider() method_id {
+    var (_, provider, _) = load_data();
+    return provider;
 }
 
 int get_fee() method_id {
-    cell data = get_data();
-    slice ds = data.begin_parse();
-
-	return ds.skip_bits(256).preload_uint(256);
+    var (_, _, fee) = load_data();
+    return fee;
 }
