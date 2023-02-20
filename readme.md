@@ -21,6 +21,8 @@ mkdir build
 cd build
 cmake -GNinja -DOPENSSL_FOUND=1 -DOPENSSL_INCLUDE_DIR=/opt/homebrew/opt/openssl@3/include -DOPENSSL_CRYPTO_LIBRARY=/opt/homebrew/opt/openssl@3/lib/libcrypto.a -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=13.1 -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_BUILD_TYPE=Release ..
 ninja fift
+ninja func
+ninja lite-client
 ```
 2. Add `ton/build/crypto` to env
 
@@ -38,3 +40,17 @@ fift -Icontracts/fift-lib -s contracts/externalIncrement.fif EQCqzqAl5Yg4sj0jk5B
 yarn install
 yarn build && yarn start
 ``` 
+
+#### toncli deploy
+0. Install toncli:
+```
+pip3 install toncli
+```
+For alternative ways of installation you can see [toncli guide](https://github.com/disintar/toncli/blob/master/INSTALLATION.md)
+
+1. ```toncli run contracts/fift/data.fif```
+2. ```toncli run contracts/kyc.fc```
+3. ```toncli deploy -n testnet```
+
+You can now make requests to contract:
+```toncli get seqno```

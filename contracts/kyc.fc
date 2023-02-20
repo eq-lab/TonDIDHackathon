@@ -5,15 +5,15 @@ cell load_accounts_data() {
 
 (int, int, int) load_data() {
     var data = get_data().begin_parse();
-    return (data~load_uint(256), data~load_uint(256), data~load_uint(256));
+    return (data~load_uint(32), data~load_uint(256), data~load_uint(32));
 }
 
 () save_data(int seqno, int provider, int fee, cell account_data) impure inline {
     set_data(
         begin_cell()
-            .store_uint(seqno, 256)
+            .store_uint(seqno, 32)
             .store_uint(provider, 256)
-            .store_uint(fee, 256)
+            .store_uint(fee, 32)
             .store_dict(account_data)
             .end_cell()
     );
@@ -34,7 +34,7 @@ cell load_accounts_data() {
         int fee = 0;
         accept_message();
 
-        save_data(seqno + 1, provider, fee, new_dict());
+        save_data(seqno, provider, fee, new_dict());
         return ();
     }
 
