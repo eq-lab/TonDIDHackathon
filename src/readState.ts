@@ -1,7 +1,8 @@
 import { getHttpEndpoint } from "@orbs-network/ton-access";
 import { TonClient, Address } from "ton";
 import Counter from "./kyc";
-import Kyc from "./kyc"; // this is the interface class we just implemented
+import Kyc from "./kyc";
+import {convertGramToNum, convertNumToGram} from "./utils/common"; // this is the interface class we just implemented
 
 export async function readState(contractAddress: string) {
     console.log(`\nRead state`)
@@ -19,8 +20,11 @@ export async function readState(contractAddress: string) {
     console.log(`kycProvider = 0x${kycProvider.toString(16)}`);
 
     const feeValue = await kycContract.getFee();
-    console.log("fee =", feeValue.toString());
+    console.log(`fee = ${convertGramToNum(feeValue)}`);
 
     const seqnoValue = await kycContract.getSeqno();
-    console.log("seqno =", seqnoValue.toString());
+    console.log(`seqno = ${seqnoValue.toString()}`);
+
+    const accounts = await kycContract.getSeqno();
+    console.log(`seqno = ${seqnoValue.toString()}`);
 }

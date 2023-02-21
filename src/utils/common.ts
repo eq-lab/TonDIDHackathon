@@ -30,7 +30,7 @@ export const createDeployment = (): Deployment => {
 
     return {
         getContractWithAddress(address: string): ContractInfo | undefined {
-            return infoByName.get(address);
+            return infoByAddress.get(address);
         }, getContractWithName(name: string): ContractInfo | undefined {
             return infoByName.get(name);
         }, pushContract(info: ContractInfo): void {
@@ -45,4 +45,16 @@ export async function convertMnemonicToPrivateKey(mnemonic: string, filename: st
     const key = await mnemonicToPrivateKey(mnemonic.split(" "));
     console.log(`Export private key to ${filename} file. Public key: 0x${key.publicKey.toString('hex')}`);
     fs.writeFileSync(filename, key.secretKey);
+}
+
+export function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function convertNumToGram(num: number): number{
+    return num * 1000000000;
+}
+
+export function convertGramToNum(gram: bigint): number{
+    return Number(gram) / 1000000000;
 }

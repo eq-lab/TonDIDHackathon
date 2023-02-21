@@ -9,6 +9,7 @@ import {
     parseTuple,
     Dictionary
 } from "ton-core";
+import {convertNumToGram} from "./utils/common";
 
 export default class Kyc implements Contract {
 
@@ -28,7 +29,7 @@ export default class Kyc implements Contract {
         const data = beginCell()
             .storeUint(initialSeqno, 32)
             .storeBuffer(Buffer.from(provider, 'hex'), 32)
-            .storeUint(fee, 32)
+            .storeCoins(convertNumToGram(fee))
             // .storeCoins(fee) // initial seqno value
             .storeDict(accounts)
             .endCell();

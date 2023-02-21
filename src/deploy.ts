@@ -1,11 +1,11 @@
 import * as fs from "fs";
 import { getHttpEndpoint } from "@orbs-network/ton-access";
 import { mnemonicToWalletKey } from "ton-crypto";
-import {TonClient, Cell, WalletContractV4, Address} from "ton";
+import {TonClient, Cell, WalletContractV4, Address, toNano} from "ton";
 import Counter from "./kyc";
 import Kyc from "./kyc";
 import {Dictionary} from "ton-core";
-import {createDeployment} from "./utils/common"; // this is the interface class from step 7
+import {createDeployment, sleep} from "./utils/common"; // this is the interface class from step 7
 
 export async function deploy(
     contractName: string,
@@ -57,8 +57,4 @@ export async function deploy(
     }
     console.log("deploy transaction confirmed!");
     deployment.pushContract({ workchain: 0, name: contractName, address: counter.address.toString()});
-}
-
-function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }

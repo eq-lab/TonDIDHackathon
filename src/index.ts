@@ -18,7 +18,7 @@ async function main(){
             }).option('fee', {
                 describe: "Fee amount in TON coins",
                 alias: 'f',
-                default: 1,
+                default: 0.01,
             }).option('accounts', {
                 describe: "Already KYC-passed accounts. Format: [[address_0,boolean_0],..,[address_N,boolean_N]]",
                 alias: 'a',
