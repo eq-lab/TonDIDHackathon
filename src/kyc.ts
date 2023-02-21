@@ -76,11 +76,12 @@ export default class Kyc implements Contract {
         });
     }
 
-    async sendExternal(provider: ContractProvider, num: number) {
+    async sendExternal(provider: ContractProvider, action: number) {
         const seqno = await this.getSeqno(provider);
         const messageBody = beginCell()
-            .storeUint(seqno, 32) // op (op #1 = increment)
-            .storeUint(num, 32) // query id
+            .storeUint(action, 4)
+            .storeUint(seqno, 32)
+            .storeUint(0, 256)
             .endCell();
 
         console.log(`EXTERNAL: ${messageBody.toBoc().toString('hex')}`);

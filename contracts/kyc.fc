@@ -1,11 +1,11 @@
-cell load_accounts_data() {
-	slice data = get_data().begin_parse();
-	return data.preload_ref();
-}
+;; cell load_accounts_data() {
+;; 	slice data = get_data().begin_parse();
+;; 	return data.pre_load_dict();
+;; }
 
-(int, int, int) load_data() {
+(int, int, int, cell) load_data() {
     var data = get_data().begin_parse();
-    return (data~load_uint(32), data~load_uint(256), data~load_uint(32));
+    return (data~load_uint(32), data~load_uint(256), data~load_grams(), data~load_dict());
 }
 
 () save_data(int seqno, int provider, int fee, cell account_data) impure inline {
@@ -13,44 +13,33 @@ cell load_accounts_data() {
         begin_cell()
             .store_uint(seqno, 32)
             .store_uint(provider, 256)
-            .store_uint(fee, 32)
+            .store_grams(fee)
             .store_dict(account_data)
             .end_cell()
     );
 }
 
 () recv_external(slice in_msg) impure {
-    int msg_seqno = 0;
-    var (stored_seqno, provider, fee) = load_data();
-    ;; throw_unless(32, stored_seqno == msg_seqno);
+    int operation = in_msg~load_uint(4);
+    int msg_seqno = in_msg~load_uint(32);
+    var (stored_seqno, provider, fee, accounts_data) = load_data();
+    throw_unless(32, stored_seqno == msg_seqno);
 
-    (int parsed_account, _) = in_msg.parse_std_addr();
-	cell accounts_data = load_accounts_data();
-    int action = 0;
-
-    if (action == 0) { ;; init contract
-        int seqno = 1;
-        int provider = 0;
-        int fee = 0;
-        accept_message();
-
-        save_data(seqno, provider, fee, new_dict());
-        return ();
-    }
+    int parsed_account = in_msg~load_uint(256);
 
     accept_message();
     (slice status, int success) = accounts_data.udict_get?(256, parsed_account);
-
+    int success = 0;
 	if (success == 0) {
-		status = "Under Process";
-		accounts_data~udict_set(256, parsed_account, status);
-	    save_data(stored_seqno + 1, provider, fee, accounts_data);
+		accounts_data~udict_set(256, parsed_account, "Under Process");
 	}
+
+    save_data(stored_seqno + 1, provider, fee, accounts_data);
 }
 
 () recv_internal(slice account, slice new_status) impure {
     (int parsed_account, _) = account.parse_std_addr();
-    cell accounts_data = load_accounts_data();
+    var (_, _, _, accounts_data) = load_data();
     accept_message();
     accounts_data~udict_set(256, parsed_account, new_status);
 	set_data(accounts_data);
@@ -58,7 +47,7 @@ cell load_accounts_data() {
 
 slice get_accounts_status(slice account) method_id {
     (int parsed_account, _) = account.parse_std_addr();
-	cell accounts_data = load_accounts_data();
+	var (_, _, _, accounts_data) = load_data();
 	(slice status, int success) = accounts_data.udict_get?(256, parsed_account);
 	throw_unless(98, success);
 
@@ -66,16 +55,21 @@ slice get_accounts_status(slice account) method_id {
 }
 
 int get_seqno() method_id {
-    var (seqno, _, _) = load_data();
+    var (seqno, _, _, _) = load_data();
     return seqno;
 }
 
 int get_provider() method_id {
-    var (_, provider, _) = load_data();
+    var (_, provider, _, _) = load_data();
     return provider;
 }
 
 int get_fee() method_id {
-    var (_, _, fee) = load_data();
+    var (_, _, fee, _) = load_data();
     return fee;
+}
+
+cell get_accounts_data() method_id {
+    var (_, _, _, accounts_data) = load_data();
+    return accounts_data;
 }
