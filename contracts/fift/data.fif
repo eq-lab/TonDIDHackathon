@@ -7,7 +7,7 @@ constant public_key // save public to constant
 
 <b
   0 32 u, // seqno
-  0 256 u, // subwallet-id
-  0 32 u, // fee
+  322 256 u, // provider address
+  0 Gram, // fee
   public_key B, // add bin public key to cell
 b>
