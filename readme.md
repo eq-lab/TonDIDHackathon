@@ -35,10 +35,18 @@ npx func-js contracts/func-lib/stdlib.fc contracts/counter.fc --boc bin/counter.
 fift -Icontracts/fift-lib -s contracts/externalIncrement.fif EQCqzqAl5Yg4sj0jk5BcX8qg24cunlsOs_2xPHJ-xwwqejhM 1 5
 ```
 
-#### Deploy, read state, internalCall method
+#### Deploy
 ```bash
 yarn install
-yarn build && yarn start
+yarn build && yarn start deploy \
+  --name 'test_contract'
+``` 
+
+#### Read state
+```bash
+yarn install
+yarn build && yarn start read-state \
+  --name 'test_contract'
 ``` 
 
 #### toncli deploy
