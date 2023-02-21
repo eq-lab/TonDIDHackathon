@@ -2,7 +2,7 @@ import * as fs from "fs";
 import { getHttpEndpoint } from "@orbs-network/ton-access";
 import { mnemonicToWalletKey } from "ton-crypto";
 import { TonClient, Cell, WalletContractV4 } from "ton";
-import Counter from "./Counter"; // this is the interface class from step 7
+import Counter from "./kyc"; // this is the interface class from step 7
 
 export async function deploy(mnemonic: string) {
     console.log(`\nDeploy`);

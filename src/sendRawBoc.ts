@@ -1,6 +1,6 @@
 import {getHttpEndpoint} from "@orbs-network/ton-access";
 import {Address, Cell, TonClient} from "ton";
-import Counter from "./Counter";
+import Counter from "./kyc";
 import fs from "fs";
 
 export async function sendRawBoc(contractAddress: string) {
@@ -19,7 +19,7 @@ export async function sendRawBoc(contractAddress: string) {
 
     const contractSeqno = await counterContract.getSeqno();
     // send the external increment transaction
-    await counterContract.sendExternalIncrement(10);
+    await counterContract.sendExternal(10);
 
     // wait until confirmed
     let currentSeqno = contractSeqno;

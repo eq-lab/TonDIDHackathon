@@ -1,7 +1,7 @@
 import { getHttpEndpoint } from "@orbs-network/ton-access";
 import { mnemonicToWalletKey } from "ton-crypto";
 import { TonClient, WalletContractV4, Address } from "ton";
-import Counter from "./Counter"; // this is the interface class we just implemented
+import Counter from "./kyc"; // this is the interface class we just implemented
 
 export async function externalCall(contractAddress: string) {
     console.log(`\nExternal call`);
@@ -17,7 +17,7 @@ export async function externalCall(contractAddress: string) {
 
     const contractSeqno = await counterContract.getSeqno();
     // send the external increment transaction
-    await counterContract.sendExternalIncrement(10);
+    await counterContract.sendExternal(10);
 
     // wait until confirmed
     let currentSeqno = contractSeqno;

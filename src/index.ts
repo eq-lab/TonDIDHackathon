@@ -9,17 +9,17 @@ async function main(){
     const mnemonic = "casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle"; // your 24 secret words (replace ... with the rest of the words)
 
     // await deploy(mnemonic)
-    const contractAddress = 'EQCqzqAl5Yg4sj0jk5BcX8qg24cunlsOs_2xPHJ-xwwqejhM';
+    const contractAddress = 'kQB4SqcNCKjjiH6Y6wJtPyhVVr8s_XRhIA0N82HuZJixVJK3';
 
     await readState(contractAddress);
-    await internalCall(mnemonic, contractAddress);
-    await readState(contractAddress);
+    // await internalCall(mnemonic, contractAddress);
+    // await readState(contractAddress);
 
     await externalCall(contractAddress);
     await readState(contractAddress);
 
-    await sendRawBoc(contractAddress);
-    await readState(contractAddress);
+    // await sendRawBoc(contractAddress);
+    // await readState(contractAddress);
 }
 
 main()

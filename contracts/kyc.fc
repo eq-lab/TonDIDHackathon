@@ -19,12 +19,12 @@ cell load_accounts_data() {
     );
 }
 
-() recv_external(slice account) impure {
+() recv_external(slice in_msg) impure {
     int msg_seqno = 0;
     var (stored_seqno, provider, fee) = load_data();
-    throw_unless(32, stored_seqno == msg_seqno);
+    ;; throw_unless(32, stored_seqno == msg_seqno);
 
-    (int parsed_account, _) = account.parse_std_addr();
+    (int parsed_account, _) = in_msg.parse_std_addr();
 	cell accounts_data = load_accounts_data();
     int action = 0;
 
