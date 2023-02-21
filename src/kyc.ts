@@ -1,11 +1,36 @@
-import { Contract, ContractProvider, Sender, Address, Cell, contractAddress, beginCell, parseTuple } from "ton-core";
+import {
+    Contract,
+    ContractProvider,
+    Sender,
+    Address,
+    Cell,
+    contractAddress,
+    beginCell,
+    parseTuple,
+    Dictionary
+} from "ton-core";
 
 export default class Kyc implements Contract {
 
-    static createForDeploy(code: Cell, initialCounterValue: number): Kyc {
+    static createForDeploy(
+        code: Cell, 
+        initialSeqno: number, 
+        kycProvider: string, 
+        fee: number,
+        accounts: Dictionary<number, boolean>
+    ): Kyc {
+        let provider = kycProvider;
+        if (kycProvider.startsWith('0x')){
+            provider = kycProvider.substring(2);
+        }
+
+        // console.log(`KYC provider: ${provider}`);
         const data = beginCell()
-            .storeUint(initialCounterValue, 64)
-            .storeUint(0, 64) // initial seqno value
+            .storeUint(initialSeqno, 32)
+            .storeBuffer(Buffer.from(provider, 'hex'), 32)
+            .storeUint(fee, 32)
+            // .storeCoins(fee) // initial seqno value
+            .storeDict(accounts)
             .endCell();
         const workchain = 0; // deploy to workchain 0
         const address = contractAddress(workchain, { code, data });

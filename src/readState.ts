@@ -1,6 +1,7 @@
 import { getHttpEndpoint } from "@orbs-network/ton-access";
 import { TonClient, Address } from "ton";
-import Counter from "./kyc"; // this is the interface class we just implemented
+import Counter from "./kyc";
+import Kyc from "./kyc"; // this is the interface class we just implemented
 
 export async function readState(contractAddress: string) {
     console.log(`\nRead state`)
@@ -10,16 +11,16 @@ export async function readState(contractAddress: string) {
 
     // open Counter instance by address
     const counterAddress = Address.parse(contractAddress); // replace with your address from step 8
-    const counter = new Counter(counterAddress);
-    const counterContract = client.open(counter);
+    const kyc = new Kyc(counterAddress);
+    const kycContract = client.open(kyc);
 
     // call the getter on chain
-    const kycProvider = await counterContract.getProvider();
-    console.log("kycProvider =", kycProvider.toString());
+    const kycProvider = await kycContract.getProvider();
+    console.log(`kycProvider = 0x${kycProvider.toString(16)}`);
 
-    const feeValue = await counterContract.getFee();
+    const feeValue = await kycContract.getFee();
     console.log("fee =", feeValue.toString());
 
-    const seqnoValue = await counterContract.getSeqno();
+    const seqnoValue = await kycContract.getSeqno();
     console.log("seqno =", seqnoValue.toString());
 }

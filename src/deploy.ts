@@ -1,24 +1,35 @@
 import * as fs from "fs";
 import { getHttpEndpoint } from "@orbs-network/ton-access";
 import { mnemonicToWalletKey } from "ton-crypto";
-import { TonClient, Cell, WalletContractV4 } from "ton";
-import Counter from "./kyc"; // this is the interface class from step 7
+import {TonClient, Cell, WalletContractV4, Address} from "ton";
+import Counter from "./kyc";
+import Kyc from "./kyc";
+import {Dictionary} from "ton-core";
+import {createDeployment} from "./utils/common"; // this is the interface class from step 7
 
-export async function deploy(mnemonic: string) {
+export async function deploy(
+    contractName: string,
+    mnemonic: string,
+    initialSeqno: number,
+    kycProvider: string,
+    fee: number,
+    accounts: Dictionary<number, boolean>
+) {
     console.log(`\nDeploy`);
+    const deployment = createDeployment();
     // initialize ton rpc client on testnet
     const endpoint = await getHttpEndpoint({ network: "testnet" });
     const client = new TonClient({ endpoint });
 
     // prepare Counter's initial code and data cells for deployment
-    const counterCode = Cell.fromBoc(fs.readFileSync("bin/counter.cell"))[0]; // compilation output from step 6
-    const initialCounterValue = 10;
-    const counter = Counter.createForDeploy(counterCode, initialCounterValue);
+    const kycCode = Cell.fromBoc(fs.readFileSync("bin/kyc.cell"))[0]; // compilation output from step 6
+
+    const counter = Kyc.createForDeploy(kycCode, initialSeqno, kycProvider, fee, accounts);
 
     // exit if contract is already deployed
     console.log("contract address:", counter.address.toString());
     if (await client.isContractDeployed(counter.address)) {
-        return console.log("Counter already deployed");
+        return console.log("Contract already deployed");
     }
 
     // open wallet v4 (notice the correct wallet version here)
@@ -45,6 +56,7 @@ export async function deploy(mnemonic: string) {
         currentSeqno = await walletContract.getSeqno();
     }
     console.log("deploy transaction confirmed!");
+    deployment.pushContract({ workchain: 0, name: contractName, address: counter.address.toString()});
 }
 
 function sleep(ms: number) {

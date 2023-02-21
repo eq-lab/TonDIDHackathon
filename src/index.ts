@@ -1,25 +1,69 @@
 import {deploy} from "./deploy";
 import {readState} from "./readState";
-import {internalCall} from "./internalCall";
-import {externalCall} from "./externalCall";
-import {sendRawBoc} from "./sendRawBoc";
+import {Dictionary} from "ton-core";
+import yargs, {Argv} from "yargs";
+import {createDeployment} from "./utils/common";
 
 async function main(){
-    // open wallet v4 (notice the correct wallet version here)
-    const mnemonic = "casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle"; // your 24 secret words (replace ... with the rest of the words)
-
-    // await deploy(mnemonic)
-    const contractAddress = 'kQB4SqcNCKjjiH6Y6wJtPyhVVr8s_XRhIA0N82HuZJixVJK3';
-
-    await readState(contractAddress);
-    // await internalCall(mnemonic, contractAddress);
-    // await readState(contractAddress);
-
-    await externalCall(contractAddress);
-    await readState(contractAddress);
-
-    // await sendRawBoc(contractAddress);
-    // await readState(contractAddress);
+    let argv = yargs
+        .command('deploy', "Deploy the KYC contract.", (yargs: Argv) =>
+            yargs.option('seqno', {
+                describe: "Initial seqno value",
+                alias: 's',
+                default: 1,
+            }).option('provider', {
+                describe: "Public key of KYC provider",
+                alias: 'p',
+                default: "0xc0681cb4375e11e6b2f75ff84e875c6ae02aea67d28f85c9ab2f2bb8ec382e69"
+            }).option('fee', {
+                describe: "Fee amount in TON coins",
+                alias: 'f',
+                default: 1,
+            }).option('accounts', {
+                describe: "Already KYC-passed accounts. Format: [[address_0,boolean_0],..,[address_N,boolean_N]]",
+                alias: 'a',
+                default: "[]",
+            }).option('mnemonic', {
+                describe: "Mnemonic for signer acc",
+                alias: 'm',
+                default: "casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle",
+            }).option('name', {
+                describe: "Contract name for fast searching",
+                alias: 'n',
+                type: 'string',
+                required: true
+            }), ({name, seqno, provider, fee, accounts, mnemonic}) => {
+                // todo: fill dict
+                // console.log(name, seqno, provider, fee, accounts, mnemonic)
+                deploy(name, mnemonic, seqno, provider, fee, Dictionary.empty());
+            })
+        .command('read-state', "Read state of KYC contract.", (yargs: Argv) =>
+            yargs.option('name', {
+                describe: "Contract name",
+                alias: 'n',
+                type: 'string'
+            }).option('address', {
+                describe: "Base64-url address of KYC provider",
+                alias: 'a',
+                type: 'string'
+            }), ({name, address}) => {
+            if (name === undefined && address === undefined) {
+                throw '--name or --address must be presented!'
+            }
+            const deployment = createDeployment();
+            let contractInfo;
+            if (name !== undefined) {
+                contractInfo = deployment.getContractWithName(name)
+            }
+            if (address !== undefined) {
+                contractInfo = deployment.getContractWithAddress(address)
+            }
+            if (contractInfo === undefined) {
+                throw 'unknown contract'
+            }
+            readState(contractInfo.address);
+        });
+    argv.parse();
 }
 
 main()
