@@ -9,7 +9,12 @@ import {
     parseTuple,
     Dictionary,
 } from 'ton-core';
-import { convertNumToGram } from './utils/common';
+import { AccountsDictionaryKey, AccountsDictionaryValue, convertNumToGram } from './utils/common';
+
+enum ActionExternal {
+    Setup = 0,
+    PushAccStates = 1,
+}
 
 export class Kyc implements Contract {
     static createForDeploy(
@@ -17,7 +22,7 @@ export class Kyc implements Contract {
         initialSeqno: number,
         kycProvider: string,
         fee: number,
-        accounts: Dictionary<number, boolean>
+        accounts: Dictionary<number, number>
     ): Kyc {
         let provider = kycProvider;
         if (kycProvider.startsWith('0x')) {
@@ -29,7 +34,6 @@ export class Kyc implements Contract {
             .storeUint(initialSeqno, 32)
             .storeBuffer(Buffer.from(provider, 'hex'), 32)
             .storeCoins(convertNumToGram(fee))
-            // .storeCoins(fee) // initial seqno value
             .storeDict(accounts)
             .endCell();
         const workchain = 0; // deploy to workchain 0
@@ -66,9 +70,11 @@ export class Kyc implements Contract {
         return stack.readBigNumber();
     }
 
-    async getAccountsData(provider: ContractProvider): Promise<Cell> {
+    async getAccountsData(provider: ContractProvider): Promise<Dictionary<number, number>> {
         const { stack } = await provider.get('get_accounts_data', []);
-        return stack.readCell();
+        const cell = stack.readCell();
+        const dict = Dictionary.load(AccountsDictionaryKey, AccountsDictionaryValue, cell);
+        return dict;
     }
 
     async sendInternal(provider: ContractProvider, via: Sender) {
@@ -80,6 +86,30 @@ export class Kyc implements Contract {
             value: '0.002', // send 0.002 TON for gas
             body: messageBody,
         });
+    }
+
+    async sendSetup(
+        provider: ContractProvider,
+        initialSeqno: number,
+        kycProvider: string,
+        fee: number,
+        accounts: Dictionary<number, number>
+    ) {
+        let kycSigner = kycProvider;
+        if (kycProvider.startsWith('0x')) {
+            kycSigner = kycProvider.substring(2);
+        }
+        const messageBody = beginCell()
+            .storeUint(ActionExternal.Setup, 4)
+            .storeUint(initialSeqno, 32)
+            .storeBuffer(Buffer.from(kycSigner, 'hex'), 32)
+            .storeCoins(convertNumToGram(fee))
+            .storeDict(accounts)
+            .endCell();
+
+        // console.log(`EXTERNAL: ${messageBody.toBoc().toString('hex')}`);
+        await provider.external(messageBody);
+        console.log(`External call executed`);
     }
 
     async sendExternal(provider: ContractProvider, action: number) {

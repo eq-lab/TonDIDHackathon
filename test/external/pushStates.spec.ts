@@ -1,10 +1,15 @@
 import * as fs from 'fs';
 import { Cell, Dictionary } from 'ton-core';
 import { Blockchain, OpenedContract, TreasuryContract } from '@ton-community/sandbox';
-import { Kyc } from '../src/kyc';
-import { convertGramToNum, convertNumToGram, createAccountsDictionary, createKycForDeploy } from '../src/utils/common'; // this is the interface class from tutorial 2
+import { Kyc } from '../../src/kyc';
+import {
+    convertGramToNum,
+    convertNumToGram,
+    createAccountsDictionary,
+    createKycForDeploy,
+} from '../../src/utils/common';
 
-describe('Kyc deploy tests', () => {
+describe('External::setup', () => {
     let blockchain: Blockchain;
     let wallet1: OpenedContract<TreasuryContract>;
     let kycContract: OpenedContract<Kyc>;
@@ -17,6 +22,8 @@ describe('Kyc deploy tests', () => {
         ['1', 1],
         ['2', 2],
     ]);
+
+    const newAccounts = createAccountsDictionary([['3', 2]]);
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
@@ -48,7 +55,6 @@ describe('Kyc deploy tests', () => {
 
     it('accounts', async () => {
         const accounts = await kycContract.getAccountsData();
-
-        console.log(`ACCCC:!! `, accounts.toString());
+        // todo
     });
 });

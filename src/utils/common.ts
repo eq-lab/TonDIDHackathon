@@ -9,6 +9,9 @@ import { Config, getHttpEndpoint } from '@orbs-network/ton-access';
 
 const deploymentPath = `data${path.sep}deployment.json`;
 
+export const AccountsDictionaryKey = Dictionary.Keys.Uint(256);
+export const AccountsDictionaryValue = Dictionary.Values.Uint(4);
+
 export interface ContractInfo {
     name: string;
     address: string;
@@ -59,11 +62,12 @@ export async function createWalletContract(client: TonClient, key: KeyPair): Pro
     }
     return wallet;
 }
+
 export function createKycForDeploy(
     initialSeqno: number,
     kycProvider: string,
     fee: number,
-    accounts: Dictionary<number, boolean>
+    accounts: Dictionary<number, number>
 ): Kyc {
     const kycCode = Cell.fromBoc(fs.readFileSync('bin/kyc.cell'))[0]; // compilation output from step 6
     return Kyc.createForDeploy(kycCode, initialSeqno, kycProvider, fee, accounts);
@@ -74,6 +78,19 @@ export function createKycContract(contractAddress: string): Kyc {
     return new Kyc(counterAddress);
 }
 
+export function createAccountsDictionary(initialStates?: [string, number][]): Dictionary<number, number> {
+    const dict = Dictionary.empty(AccountsDictionaryKey, AccountsDictionaryValue);
+    if (initialStates !== undefined) {
+        for (const [account, state] of initialStates) {
+            let acc = account;
+            if (account.startsWith('0x')) {
+                acc = account.substring(2);
+            }
+            dict.set(Number.parseInt(acc, 16), state);
+        }
+    }
+    return dict;
+}
 export async function convertMnemonicToPrivateKey(mnemonic: string, filename: string) {
     const key = await mnemonicToPrivateKey(mnemonic.split(' '));
     console.log(`Export private key to ${filename} file. Public key: 0x${key.publicKey.toString('hex')}`);

@@ -10,7 +10,7 @@ export async function deploy(
     initialSeqno: number,
     kycProvider: string,
     fee: number,
-    accounts: Dictionary<number, boolean>
+    accounts: Dictionary<number, number>
 ) {
     console.log(`\nDeploy`);
     const deployment = createDeployment();
