@@ -35,11 +35,11 @@
         int parsed_account = in_msg~load_uint(256);
         in_msg.end_parse();
 
-        accept_message();
-        int success = accounts_data~udict_add?(256, parsed_account, "P");
-        ;; contract stucks on throw for some reason
-        ;; throw_unless(34, success); ;; already in dictionary
+        ;; maybe should udict_get here for check and udict_add after accept_message?
+        int success = accounts_data~udict_add?(256, parsed_account, "P"); ;; Processing
+        throw_unless(33, success); ;; already in dictionary
 
+        accept_message();
         ;; fees should be somewhere here
     }
 
@@ -47,13 +47,15 @@
         ;; some signature check
         int parsed_account = in_msg~load_uint(256);
         int status = in_msg~load_uint(4);
-        ;; throw_if(32, status > 1);
+        throw_if(32, status > 1);
         in_msg.end_parse();
-        accept_message();
 
-        slice new_status = status == 0 ? "D" : "A";
-        var success = accounts_data~udict_replace?(256, parsed_account, new_status);
-        ;; throw_unless(32, success); ;; unknown account
+        slice new_status = status == 0 ? "D" : "A"; ;; Declined or Approved
+        ;; maybe should udict_get here for check and udict_replace after accept_message?
+        int success = accounts_data~udict_replace?(256, parsed_account, new_status);
+        throw_unless(34, success); ;; unknown account
+
+        accept_message();
     }
 
     save_data(stored_seqno + 1, provider, fee, accounts_data);
