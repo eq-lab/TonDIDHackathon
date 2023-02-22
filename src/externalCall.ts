@@ -1,12 +1,12 @@
-import { getHttpEndpoint } from "@orbs-network/ton-access";
-import { mnemonicToWalletKey } from "ton-crypto";
-import { TonClient, WalletContractV4, Address } from "ton";
-import { Kyc } from "./kyc";
-import {createKycContract} from "./utils/common"; // this is the interface class we just implemented
+import { getHttpEndpoint } from '@orbs-network/ton-access';
+import { mnemonicToWalletKey } from 'ton-crypto';
+import { TonClient, WalletContractV4, Address } from 'ton';
+import { Kyc } from './kyc';
+import { createKycContract } from './utils/common'; // this is the interface class we just implemented
 
 export async function externalCall(client: TonClient, contractAddress: string) {
     console.log(`\nExternal call`);
-    const keyContract = createKycContract(contractAddress)
+    const keyContract = createKycContract(contractAddress);
     const kyc = client.open(keyContract);
 
     // const contractSeqno = await counterContract.getSeqno();
@@ -21,8 +21,4 @@ export async function externalCall(client: TonClient, contractAddress: string) {
     //     currentSeqno = await counterContract.getSeqno();
     // }
     // console.log("transaction confirmed!");
-}
-
-function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }

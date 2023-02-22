@@ -1,20 +1,20 @@
-import { getHttpEndpoint } from "@orbs-network/ton-access";
-import { mnemonicToWalletKey } from "ton-crypto";
-import { TonClient, WalletContractV4, Address } from "ton";
-import { Kyc } from "./kyc";
-import {createKycContract} from "./utils/common"; // this is the interface class we just implemented
+import { getHttpEndpoint } from '@orbs-network/ton-access';
+import { mnemonicToWalletKey } from 'ton-crypto';
+import { TonClient, WalletContractV4, Address } from 'ton';
+import { Kyc } from './kyc';
+import { createKycContract } from './utils/common'; // this is the interface class we just implemented
 
 export async function internalCall(mnemonic: string, contractAddress: string) {
     console.log(`\nInternal call`);
     // initialize ton rpc client on testnet
-    const endpoint = await getHttpEndpoint({ network: "testnet" });
+    const endpoint = await getHttpEndpoint({ network: 'testnet' });
     const client = new TonClient({ endpoint });
 
     // open wallet v4 (notice the correct wallet version here)
-    const key = await mnemonicToWalletKey(mnemonic.split(" "));
+    const key = await mnemonicToWalletKey(mnemonic.split(' '));
     const wallet = WalletContractV4.create({ publicKey: key.publicKey, workchain: 0 });
-    if (!await client.isContractDeployed(wallet.address)) {
-        return console.log("wallet is not deployed");
+    if (!(await client.isContractDeployed(wallet.address))) {
+        return console.log('wallet is not deployed');
     }
 
     // open wallet and read the current seqno of the wallet
@@ -33,13 +33,13 @@ export async function internalCall(mnemonic: string, contractAddress: string) {
     // wait until confirmed
     let currentSeqno = seqno;
     while (currentSeqno == seqno) {
-        console.log("waiting for transaction to confirm...");
+        console.log('waiting for transaction to confirm...');
         await sleep(1500);
         currentSeqno = await walletContract.getSeqno();
     }
-    console.log("transaction confirmed!");
+    console.log('transaction confirmed!');
 }
 
 function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }

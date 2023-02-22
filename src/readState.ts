@@ -1,8 +1,8 @@
-import { TonClient } from "ton";
-import {convertGramToNum, createKycContract} from "./utils/common";
+import { TonClient } from 'ton';
+import { convertGramToNum, createKycContract } from './utils/common';
 
 export async function readState(client: TonClient, contractAddress: string) {
-    console.log(`\nRead state`)
+    console.log(`\nRead state`);
     const kycContract = await createKycContract(contractAddress);
     const kyc = client.open(kycContract);
 
