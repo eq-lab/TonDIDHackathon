@@ -2,7 +2,7 @@ import {deploy} from "./deploy";
 import {readState} from "./readState";
 import {Dictionary} from "ton-core";
 import yargs, {Argv} from "yargs";
-import {createDeployment} from "./utils/common";
+import {createDeployment, createTonClient} from "./utils/common";
 
 async function main(){
     let argv = yargs
@@ -32,10 +32,11 @@ async function main(){
                 alias: 'n',
                 type: 'string',
                 required: true
-            }), ({name, seqno, provider, fee, accounts, mnemonic}) => {
+            }), async ({name, seqno, provider, fee, accounts, mnemonic}) => {
                 // todo: fill dict
                 // console.log(name, seqno, provider, fee, accounts, mnemonic)
-                deploy(name, mnemonic, seqno, provider, fee, Dictionary.empty());
+                const client = await createTonClient({network: 'testnet'});
+                await deploy(client, name, mnemonic, seqno, provider, fee, Dictionary.empty());
             })
         .command('read-state', "Read state of KYC contract.", (yargs: Argv) =>
             yargs.option('name', {
@@ -46,7 +47,7 @@ async function main(){
                 describe: "Base64-url address of KYC provider",
                 alias: 'a',
                 type: 'string'
-            }), ({name, address}) => {
+            }), async ({name, address}) => {
             if (name === undefined && address === undefined) {
                 throw '--name or --address must be presented!'
             }
@@ -61,7 +62,8 @@ async function main(){
             if (contractInfo === undefined) {
                 throw 'unknown contract'
             }
-            readState(contractInfo.address);
+            const client = await createTonClient({network: 'testnet'});
+            await readState(client, contractInfo.address);
         });
     argv.parse();
 }

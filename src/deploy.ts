@@ -1,13 +1,12 @@
 import * as fs from "fs";
-import { getHttpEndpoint } from "@orbs-network/ton-access";
-import { mnemonicToWalletKey } from "ton-crypto";
-import {TonClient, Cell, WalletContractV4, Address, toNano} from "ton";
-import Counter from "./kyc";
-import Kyc from "./kyc";
-import {Dictionary} from "ton-core";
-import {createDeployment, sleep} from "./utils/common"; // this is the interface class from step 7
+import {TonClient, Cell} from "ton";
+import { Kyc } from "./kyc";
+import { Dictionary } from "ton-core";
+import {createDeployment, createWalletContract, sleep} from "./utils/common";
+import {mnemonicToWalletKey} from "ton-crypto"; // this is the interface class from step 7
 
 export async function deploy(
+    client: TonClient,
     contractName: string,
     mnemonic: string,
     initialSeqno: number,
@@ -17,9 +16,6 @@ export async function deploy(
 ) {
     console.log(`\nDeploy`);
     const deployment = createDeployment();
-    // initialize ton rpc client on testnet
-    const endpoint = await getHttpEndpoint({ network: "testnet" });
-    const client = new TonClient({ endpoint });
 
     // prepare Counter's initial code and data cells for deployment
     const kycCode = Cell.fromBoc(fs.readFileSync("bin/kyc.cell"))[0]; // compilation output from step 6
@@ -32,28 +28,23 @@ export async function deploy(
         return console.log("Contract already deployed");
     }
 
-    // open wallet v4 (notice the correct wallet version here)
     const key = await mnemonicToWalletKey(mnemonic.split(" "));
-    const wallet = WalletContractV4.create({ publicKey: key.publicKey, workchain: 0 });
-    if (!await client.isContractDeployed(wallet.address)) {
-        return console.log("wallet is not deployed");
-    }
+    const walletContract = await createWalletContract(client, key);
+    const wallet = client.open(walletContract);
+    const sender = wallet.sender(key.secretKey);
 
-    // open wallet and read the current seqno of the wallet
-    const walletContract = client.open(wallet);
-    const walletSender = walletContract.sender(key.secretKey);
-    const seqno = await walletContract.getSeqno();
+    const seqno = await wallet.getSeqno();
 
     // send the deploy transaction
     const counterContract = client.open(counter);
-    await counterContract.sendDeploy(walletSender);
+    await counterContract.sendDeploy(sender);
 
     // wait until confirmed
     let currentSeqno = seqno;
     while (currentSeqno == seqno) {
         console.log("waiting for deploy transaction to confirm...");
         await sleep(1500);
-        currentSeqno = await walletContract.getSeqno();
+        currentSeqno = await wallet.getSeqno();
     }
     console.log("deploy transaction confirmed!");
     deployment.pushContract({ workchain: 0, name: contractName, address: counter.address.toString()});

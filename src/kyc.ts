@@ -11,7 +11,7 @@ import {
 } from "ton-core";
 import {convertNumToGram} from "./utils/common";
 
-export default class Kyc implements Contract {
+export class Kyc implements Contract {
 
     static createForDeploy(
         code: Cell, 
@@ -64,6 +64,11 @@ export default class Kyc implements Contract {
         const address = beginCell().storeAddress(account).endCell();
         const { stack } = await provider.get("get_accounts_status", parseTuple(address));
         return stack.readBigNumber();
+    }
+
+    async getAccountsData(provider: ContractProvider) {
+        const { stack } = await provider.get("get_accounts_data", []);
+        return stack.readCell();
     }
 
     async sendInternal(provider: ContractProvider, via: Sender) {

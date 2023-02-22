@@ -1,36 +1,12 @@
 import {getHttpEndpoint} from "@orbs-network/ton-access";
 import {Address, Cell, TonClient} from "ton";
-import Counter from "./kyc";
+import { Kyc } from "./kyc";
 import fs from "fs";
+import {createKycContract} from "./utils/common";
 
-export async function sendRawBoc(contractAddress: string) {
+export async function sendRawBoc(client: TonClient, filename: string) {
     console.log(`\nSend raw boc`);
-    // initialize ton rpc client on testnet
-    const endpoint = await getHttpEndpoint({ network: "testnet" });
-    const client = new TonClient({ endpoint });
-    const externalMessage = Cell.fromBoc(fs.readFileSync("bin/external-increment.boc"))[0]; // compilation output from step 6
-
+    const externalMessage = Cell.fromBoc(fs.readFileSync(filename))[0]; // compilation output from step 6
     await client.sendFile(externalMessage.toBoc())
-
-    // open Counter instance by address
-    const counterAddress = Address.parse(contractAddress); // replace with your address from step 8
-    const counter = new Counter(counterAddress);
-    const counterContract = client.open(counter);
-
-    const contractSeqno = await counterContract.getSeqno();
-    // send the external increment transaction
-    await counterContract.sendExternal(10);
-
-    // wait until confirmed
-    let currentSeqno = contractSeqno;
-    while (currentSeqno == contractSeqno) {
-        console.log("waiting for transaction to confirm...");
-        await sleep(1500);
-        currentSeqno = await counterContract.getSeqno();
-    }
-    console.log("transaction confirmed!");
 }
 
-function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
