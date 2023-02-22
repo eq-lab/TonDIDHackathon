@@ -1,11 +1,11 @@
-;; cell load_accounts_data() {
-;; 	slice data = get_data().begin_parse();
-;; 	return data.pre_load_dict();
-;; }
-
 (int, int, int, cell) load_data() {
     var data = get_data().begin_parse();
-    return (data~load_uint(32), data~load_uint(256), data~load_grams(), data~load_dict());
+    int seqno = data~load_uint(32);
+    int provider = data~load_uint(256);
+    int fee = data~load_grams();
+    cell accounts_data = data.slice_bits() == 0 ? new_dict() : data~load_dict();
+    data.end_parse();
+    return (seqno, provider, fee, accounts_data);
 }
 
 () save_data(int seqno, int provider, int fee, cell account_data) impure inline {
@@ -29,7 +29,7 @@
 
     accept_message();
     (slice status, int success) = accounts_data.udict_get?(256, parsed_account);
-    int success = 0;
+
 	if (success == 0) {
 		accounts_data~udict_set(256, parsed_account, "Under Process");
 	}

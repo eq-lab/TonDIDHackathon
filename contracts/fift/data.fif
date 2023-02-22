@@ -9,5 +9,4 @@ constant public_key // save public to constant
   0 32 u, // seqno
   322 256 u, // provider address
   0 Gram, // fee
-  public_key B, // add bin public key to cell
 b>
