@@ -44,28 +44,29 @@ export class Kyc implements Contract {
         });
     }
 
-    async getProvider(provider: ContractProvider) {
+    async getProvider(provider: ContractProvider): Promise<string> {
         const { stack } = await provider.get('get_provider', []);
-        return stack.readBigNumber();
+        const kycProvider = stack.readBigNumber().toString(16);
+        return `0x${kycProvider}`;
     }
 
-    async getFee(provider: ContractProvider) {
+    async getFee(provider: ContractProvider): Promise<bigint> {
         const { stack } = await provider.get('get_fee', []);
         return stack.readBigNumber();
     }
 
-    async getSeqno(provider: ContractProvider) {
+    async getSeqno(provider: ContractProvider): Promise<bigint> {
         const { stack } = await provider.get('get_seqno', []);
         return stack.readBigNumber();
     }
 
-    async getAccountStatus(provider: ContractProvider, account: Address) {
+    async getAccountStatus(provider: ContractProvider, account: Address): Promise<bigint> {
         const address = beginCell().storeAddress(account).endCell();
         const { stack } = await provider.get('get_accounts_status', parseTuple(address));
         return stack.readBigNumber();
     }
 
-    async getAccountsData(provider: ContractProvider) {
+    async getAccountsData(provider: ContractProvider): Promise<Cell> {
         const { stack } = await provider.get('get_accounts_data', []);
         return stack.readCell();
     }

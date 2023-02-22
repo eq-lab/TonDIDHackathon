@@ -1,10 +1,10 @@
-import { Address, TonClient, WalletContractV4 } from 'ton';
+import { Address, Cell, TonClient, WalletContractV4 } from 'ton';
 import * as fs from 'fs';
 import path from 'path';
 import { mnemonicToPrivateKey } from 'ton-crypto/dist/mnemonic/mnemonic';
 import { Kyc } from '../kyc';
 import { KeyPair, mnemonicToWalletKey } from 'ton-crypto';
-import { Contract, Sender } from 'ton-core';
+import { Contract, Dictionary, Sender } from 'ton-core';
 import { Config, getHttpEndpoint } from '@orbs-network/ton-access';
 
 const deploymentPath = `data${path.sep}deployment.json`;
@@ -58,6 +58,15 @@ export async function createWalletContract(client: TonClient, key: KeyPair): Pro
         throw 'createWallet: wallet is not deployed';
     }
     return wallet;
+}
+export function createKycForDeploy(
+    initialSeqno: number,
+    kycProvider: string,
+    fee: number,
+    accounts: Dictionary<number, boolean>
+): Kyc {
+    const kycCode = Cell.fromBoc(fs.readFileSync('bin/kyc.cell'))[0]; // compilation output from step 6
+    return Kyc.createForDeploy(kycCode, initialSeqno, kycProvider, fee, accounts);
 }
 
 export function createKycContract(contractAddress: string): Kyc {

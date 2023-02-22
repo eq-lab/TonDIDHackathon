@@ -7,7 +7,7 @@ export async function readState(client: TonClient, contractAddress: string) {
     const kyc = client.open(kycContract);
 
     const kycProvider = await kyc.getProvider();
-    console.log(`kycProvider = 0x${kycProvider.toString(16)}`);
+    console.log(`kycProvider = ${kycProvider}`);
 
     const feeValue = await kyc.getFee();
     console.log(`fee = ${convertGramToNum(feeValue)}`);

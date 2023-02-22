@@ -28,7 +28,7 @@ ninja lite-client
 
 #### Compile FunC contract
 ```bash
-npx func-js contracts/func-lib/stdlib.fc contracts/counter.fc --boc bin/counter.cell
+npx func-js contracts/func-lib/stdlib.fc contracts/kyc.fc --boc bin/kyc.cell
 ```
 #### Generate boc from fift script
 ```bash
