@@ -50,12 +50,12 @@
         throw_if(32, status > 1);
         in_msg.end_parse();
 
-        slice new_status = status == 0 ? "D" : "A"; ;; Declined or Approved
         (_, int in_dict) = accounts_data.udict_get?(256, parsed_account);
         throw_unless(34, in_dict); ;; unknown account
 
         accept_message();
 
+        slice new_status = status == 0 ? "D" : "A"; ;; Declined or Approved
         accounts_data~udict_replace?(256, parsed_account, new_status);
     }
 
