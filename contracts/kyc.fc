@@ -25,24 +25,43 @@
     var (stored_seqno, provider, fee, accounts_data) = load_data();
     throw_unless(32, stored_seqno == msg_seqno);
 
-    int parsed_account = in_msg~load_uint(256);
+    if (operation == 0) { ;; update params
+        ;; some signature check
+        ;; updating params in storage
+        return ();
+    }
 
-    accept_message();
-    (slice status, int success) = accounts_data.udict_get?(256, parsed_account);
+    if (operation == 1) { ;; request for account check
+        int parsed_account = in_msg~load_uint(256);
+        in_msg.end_parse();
 
-	if (success == 0) {
-		accounts_data~udict_set(256, parsed_account, "Under Process");
-	}
+        accept_message();
+        int success = accounts_data~udict_add?(256, parsed_account, "P");
+        ;; contract stucks on throw for some reason
+        ;; throw_unless(34, success); ;; already in dictionary
+
+        ;; fees should be somewhere here
+    }
+
+    if (operation == 2) { ;; kyc provider acc status set
+        ;; some signature check
+        int parsed_account = in_msg~load_uint(256);
+        int status = in_msg~load_uint(4);
+        ;; throw_if(32, status > 1);
+        in_msg.end_parse();
+        accept_message();
+
+        slice new_status = status == 0 ? "D" : "A";
+        var success = accounts_data~udict_replace?(256, parsed_account, new_status);
+        ;; throw_unless(32, success); ;; unknown account
+    }
 
     save_data(stored_seqno + 1, provider, fee, accounts_data);
+    return ();
 }
 
-() recv_internal(slice account, slice new_status) impure {
-    (int parsed_account, _) = account.parse_std_addr();
-    var (_, _, _, accounts_data) = load_data();
-    accept_message();
-    accounts_data~udict_set(256, parsed_account, new_status);
-	set_data(accounts_data);
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    return ();
 }
 
 slice get_accounts_status(slice account) method_id {
