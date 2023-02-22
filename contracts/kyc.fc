@@ -51,11 +51,12 @@
         in_msg.end_parse();
 
         slice new_status = status == 0 ? "D" : "A"; ;; Declined or Approved
-        ;; maybe should udict_get here for check and udict_replace after accept_message?
-        int success = accounts_data~udict_replace?(256, parsed_account, new_status);
-        throw_unless(34, success); ;; unknown account
+        (_, int in_dict) = accounts_data.udict_get?(256, parsed_account);
+        throw_unless(34, in_dict); ;; unknown account
 
         accept_message();
+
+        accounts_data~udict_replace?(256, parsed_account, new_status);
     }
 
     save_data(stored_seqno + 1, provider, fee, accounts_data);
