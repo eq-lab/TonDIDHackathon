@@ -36,19 +36,7 @@
         save_data(stored_seqno + 1, newProvider, newFee, accounts_data);
         return ();
 
-    } elseif (operation == 1) { ;; request for account check
-        int parsed_account = in_msg~load_uint(256);
-        in_msg.end_parse();
-
-        ;; maybe should udict_get here for check and udict_add after accept_message?
-        int success = accounts_data~udict_add?(256, parsed_account, "P"); ;; Processing
-        throw_unless(33, success); ;; already in dictionary
-
-        accept_message();
-        ;; fees should be somewhere here
-        return ();
-
-    } elseif (operation == 2) { ;; kyc provider acc status set
+    } elseif (operation == 1) { ;; kyc provider acc status set
         ;; TODO: some signature check
         accept_message();
         int parsed_account = in_msg~load_uint(256);
@@ -68,6 +56,17 @@
 }
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    var (stored_seqno, provider, fee, cell accounts_data) = load_data();
+    int operation = in_msg_body~load_uint(4);
+    if (operation == 0) { ;; request KYC check for account
+        throw_if(97, msg_value != fee);
+        int account = in_msg_body~load_uint(256);
+        (_, int existed) = accounts_data.udict_get?(256, account);
+        throw_if(96, existed);
+        slice val = begin_cell().store_uint(1, 8).end_cell().begin_parse();
+        accounts_data~udict_set(256, account, val);
+        save_data(stored_seqno, provider, fee, accounts_data);
+    }
     return ();
 }
 

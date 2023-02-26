@@ -37,7 +37,7 @@ describe('External::setAccState', () => {
         blockchain = await Blockchain.create();
         wallet1 = await blockchain.treasury('user1');
 
-        // deploy counter
+        // deploy kyc contract
         kycContract = blockchain.openContract(kyc);
         await kycContract.sendDeploy(wallet1.getSender());
     });

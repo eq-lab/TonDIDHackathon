@@ -1,15 +1,4 @@
-import {
-    Contract,
-    ContractProvider,
-    Sender,
-    Address,
-    Cell,
-    contractAddress,
-    beginCell,
-    parseTuple,
-    Dictionary,
-    TupleBuilder,
-} from 'ton-core';
+import { Contract, ContractProvider, Sender, Address, Cell, contractAddress, beginCell, Dictionary } from 'ton-core';
 import {
     AccountsDictionary,
     AccountsDictionaryKey,
@@ -21,8 +10,11 @@ import { TupleItemInt } from 'ton-core/src/tuple/tuple';
 
 enum ActionExternal {
     Setup = 0,
-    RequestCheck = 1, // TODO: move to internal calls
-    SetAccState = 2,
+    SetAccState = 1,
+}
+
+enum ActionInternal {
+    RequestKyc = 0,
 }
 
 export class Kyc implements Contract {
@@ -89,14 +81,24 @@ export class Kyc implements Contract {
         return Dictionary.loadDirect(AccountsDictionaryKey, AccountsDictionaryValue, cell);
     }
 
-    async sendInternal(provider: ContractProvider, via: Sender) {
-        const messageBody = beginCell()
-            .storeUint(1, 32) // op (op #1 = increment)
-            .storeUint(0, 64) // query id
+    async sendRequestKyc(provider: ContractProvider, account: string, via: Sender) {
+        let acc = account;
+        if (account.startsWith('0x')) {
+            acc = account.substring(2);
+        }
+        const message = beginCell()
+            .storeUint(ActionInternal.RequestKyc, 4) // op
+            .storeUint(Number.parseInt(acc, 16), 256) // account
             .endCell();
+
+        const fee = await this.getFee(provider);
+        await this.sendInternal(provider, message, fee, via);
+    }
+
+    async sendInternal(provider: ContractProvider, message: Cell, value: bigint, via: Sender) {
         await provider.internal(via, {
-            value: '0.002', // send 0.002 TON for gas
-            body: messageBody,
+            value, // send TON for gas
+            body: message,
         });
     }
 
