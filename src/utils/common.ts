@@ -4,13 +4,21 @@ import path from 'path';
 import { mnemonicToPrivateKey } from 'ton-crypto/dist/mnemonic/mnemonic';
 import { Kyc } from '../kyc';
 import { KeyPair, mnemonicToWalletKey } from 'ton-crypto';
-import { Contract, Dictionary, Sender } from 'ton-core';
+import { beginCell, Contract, Dictionary, Sender } from 'ton-core';
 import { Config, getHttpEndpoint } from '@orbs-network/ton-access';
+
+export enum AccountState {
+    Unknown = 0,
+    Requested = 1,
+    Approved = 2,
+    Declined = 3,
+}
 
 const deploymentPath = `data${path.sep}deployment.json`;
 
 export const AccountsDictionaryKey = Dictionary.Keys.Uint(256);
-export const AccountsDictionaryValue = Dictionary.Values.Uint(4);
+export const AccountsDictionaryValue = Dictionary.Values.Uint(8);
+export type AccountsDictionary = Dictionary<number, number>;
 
 export interface ContractInfo {
     name: string;
@@ -67,7 +75,7 @@ export function createKycForDeploy(
     initialSeqno: number,
     kycProvider: string,
     fee: number,
-    accounts: Dictionary<number, number>
+    accounts: AccountsDictionary
 ): Kyc {
     const kycCode = Cell.fromBoc(fs.readFileSync('bin/kyc.cell'))[0]; // compilation output from step 6
     return Kyc.createForDeploy(kycCode, initialSeqno, kycProvider, fee, accounts);
@@ -78,7 +86,7 @@ export function createKycContract(contractAddress: string): Kyc {
     return new Kyc(counterAddress);
 }
 
-export function createAccountsDictionary(initialStates?: [string, number][]): Dictionary<number, number> {
+export function createAccountsDictionary(initialStates?: [string, number][]): AccountsDictionary {
     const dict = Dictionary.empty(AccountsDictionaryKey, AccountsDictionaryValue);
     if (initialStates !== undefined) {
         for (const [account, state] of initialStates) {
@@ -86,7 +94,11 @@ export function createAccountsDictionary(initialStates?: [string, number][]): Di
             if (account.startsWith('0x')) {
                 acc = account.substring(2);
             }
-            dict.set(Number.parseInt(acc, 16), state);
+            dict.set(
+                Number.parseInt(acc, 16),
+                // beginCell().storeUint(state, 8).endCell()
+                state
+            );
         }
     }
     return dict;

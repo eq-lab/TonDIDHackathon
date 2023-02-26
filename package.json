@@ -3,7 +3,7 @@
     "compile": "npx func-js contracts/func-lib/stdlib.fc contracts/kyc.fc --boc bin/kyc.cell",
     "build": "tsc --build",
     "start": "node dist/index.js",
-    "test": "npx jest ./test/*.spec.ts"
+    "test": "npx jest ./test/*/*.spec.ts"
   },
   "dependencies": {
     "@orbs-network/ton-access": "^2.2.2",

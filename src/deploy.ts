@@ -1,6 +1,6 @@
-import { TonClient } from 'ton';
+import { Cell, TonClient } from 'ton';
 import { Dictionary } from 'ton-core';
-import { createDeployment, createKycForDeploy, createWalletContract, sleep } from './utils/common';
+import { AccountsDictionary, createDeployment, createKycForDeploy, createWalletContract, sleep } from './utils/common';
 import { mnemonicToWalletKey } from 'ton-crypto'; // this is the interface class from step 7
 
 export async function deploy(
@@ -10,7 +10,7 @@ export async function deploy(
     initialSeqno: number,
     kycProvider: string,
     fee: number,
-    accounts: Dictionary<number, number>
+    accounts: AccountsDictionary
 ) {
     console.log(`\nDeploy`);
     const deployment = createDeployment();

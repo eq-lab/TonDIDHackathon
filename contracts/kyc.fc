@@ -3,9 +3,12 @@
     int seqno = data~load_uint(32);
     int provider = data~load_uint(256);
     int fee = data~load_grams();
-    cell accounts_data = data.slice_bits() == 0 ? new_dict() : data~load_dict();
+    cell dictionary = new_dict();
+    if (~ slice_empty?(data)) {
+        dictionary = data~load_dict();
+    }
     data.end_parse();
-    return (seqno, provider, fee, accounts_data);
+    return (seqno, provider, fee, dictionary);
 }
 
 () save_data(int seqno, int provider, int fee, cell account_data) impure inline {
@@ -22,16 +25,18 @@
 () recv_external(slice in_msg) impure {
     int operation = in_msg~load_uint(4);
     int msg_seqno = in_msg~load_uint(32);
-    var (stored_seqno, provider, fee, accounts_data) = load_data();
+    var (stored_seqno, provider, fee, cell accounts_data) = load_data();
     throw_unless(32, stored_seqno == msg_seqno);
 
     if (operation == 0) { ;; update params
-        ;; some signature check
-        ;; updating params in storage
+        ;; TODO: some signature check
+        accept_message();
+        int newProvider = in_msg~load_uint(256);
+        int newFee = in_msg~load_grams();
+        save_data(stored_seqno + 1, newProvider, newFee, accounts_data);
         return ();
-    }
 
-    if (operation == 1) { ;; request for account check
+    } elseif (operation == 1) { ;; request for account check
         int parsed_account = in_msg~load_uint(256);
         in_msg.end_parse();
 
@@ -41,22 +46,21 @@
 
         accept_message();
         ;; fees should be somewhere here
-    }
+        return ();
 
-    if (operation == 2) { ;; kyc provider acc status set
-        ;; some signature check
+    } elseif (operation == 2) { ;; kyc provider acc status set
+        ;; TODO: some signature check
+        accept_message();
         int parsed_account = in_msg~load_uint(256);
         int status = in_msg~load_uint(4);
-        throw_if(32, status > 1);
+;;         throw_if(32, status > 1);
         in_msg.end_parse();
 
         (_, int in_dict) = accounts_data.udict_get?(256, parsed_account);
-        throw_unless(34, in_dict); ;; unknown account
+        throw_unless(34, in_dict == 0); ;; unknown account.
 
-        accept_message();
-
-        slice new_status = status == 0 ? "D" : "A"; ;; Declined or Approved
-        accounts_data~udict_replace?(256, parsed_account, new_status);
+        slice st = begin_cell().store_int(status, 8).end_cell().begin_parse();
+        accounts_data~udict_set( 256, parsed_account, st);
     }
 
     save_data(stored_seqno + 1, provider, fee, accounts_data);
@@ -67,13 +71,11 @@
     return ();
 }
 
-slice get_accounts_status(slice account) method_id {
-    (int parsed_account, _) = account.parse_std_addr();
+int get_account_state(int account) method_id {
 	var (_, _, _, accounts_data) = load_data();
-	(slice status, int success) = accounts_data.udict_get?(256, parsed_account);
+	(slice status, int success) = accounts_data.udict_get?(256, account);
 	throw_unless(98, success);
-
-	return status;
+	return status~load_uint(8);
 }
 
 int get_seqno() method_id {

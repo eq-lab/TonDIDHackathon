@@ -10,13 +10,14 @@ import {
     createKycForDeploy,
 } from '../../src/utils/common';
 
-describe('External::setup', () => {
+describe('External::getAccState', () => {
     let blockchain: Blockchain;
     let wallet1: OpenedContract<TreasuryContract>;
     let kycContract: OpenedContract<Kyc>;
 
     const initialSeqno = 17;
     const initialProvider = '0xc0681cb4375e11e6b2f75ff84e875c6ae02aea67d28f85c9ab2f2bb8ec382e69';
+
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
         ['0x0000000000000000000000000000000000000000000000000000000000000001', AccountState.Requested],
@@ -25,8 +26,7 @@ describe('External::setup', () => {
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const newProvider = '0x848fe10f13c73b5a2f67d726b560cf6236908ef317dd39dfcecf87b5cd540a5c';
-    const newFee = 1.1;
+    const unknownAccount = '0x0000000000000000000000000000000000000000000000000000000000000011';
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
@@ -41,35 +41,15 @@ describe('External::setup', () => {
         await kycContract.sendDeploy(wallet1.getSender());
     });
 
-    it('seqno', async () => {
-        await kycContract.sendSetup(newProvider, newFee);
-        const seqno = await kycContract.getSeqno();
-        expect(Number(seqno)).toEqual(initialSeqno + 1);
-    });
-
-    it('provider', async () => {
-        await kycContract.sendSetup(newProvider, newFee);
-        const provider = await kycContract.getProvider();
-        expect(provider).toEqual(newProvider);
-    });
-
-    it('fee', async () => {
-        await kycContract.sendSetup(newProvider, newFee);
-        const fee = await kycContract.getFee();
-        expect(convertGramToNum(fee)).toEqual(newFee);
-    });
-
-    it('accounts', async () => {
-        await kycContract.sendSetup(newProvider, newFee);
-        const accounts = await kycContract.getAccountsData();
-
-        const accStates = [];
-        for (const [acc, val] of accounts) {
-            accStates.push([acc.toString(), val]);
+    it('existed accounts', async () => {
+        for (const [acc, expectedState] of initialAccounts) {
+            const actualState = await kycContract.getAccountState(acc);
+            expect(Number(actualState)).toEqual(expectedState);
         }
-        const expected = initialAccounts.map(([acc, val]) => {
-            return [Number.parseInt(acc.slice(2), 16).toString(), val];
-        });
-        expect(accStates).toEqual(expected);
+    });
+
+    it('not existed accounts', async () => {
+        const actualState = await kycContract.getAccountState(unknownAccount);
+        expect(Number(actualState)).toEqual(AccountState.Unknown);
     });
 });

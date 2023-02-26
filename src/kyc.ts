@@ -8,12 +8,21 @@ import {
     beginCell,
     parseTuple,
     Dictionary,
+    TupleBuilder,
 } from 'ton-core';
-import { AccountsDictionaryKey, AccountsDictionaryValue, convertNumToGram } from './utils/common';
+import {
+    AccountsDictionary,
+    AccountsDictionaryKey,
+    AccountsDictionaryValue,
+    AccountState,
+    convertNumToGram,
+} from './utils/common';
+import { TupleItemInt } from 'ton-core/src/tuple/tuple';
 
 enum ActionExternal {
     Setup = 0,
-    PushAccStates = 1,
+    RequestCheck = 1, // TODO: move to internal calls
+    SetAccState = 2,
 }
 
 export class Kyc implements Contract {
@@ -22,7 +31,7 @@ export class Kyc implements Contract {
         initialSeqno: number,
         kycProvider: string,
         fee: number,
-        accounts: Dictionary<number, number>
+        accounts: AccountsDictionary
     ): Kyc {
         let provider = kycProvider;
         if (kycProvider.startsWith('0x')) {
@@ -64,17 +73,20 @@ export class Kyc implements Contract {
         return stack.readBigNumber();
     }
 
-    async getAccountStatus(provider: ContractProvider, account: Address): Promise<bigint> {
-        const address = beginCell().storeAddress(account).endCell();
-        const { stack } = await provider.get('get_accounts_status', parseTuple(address));
-        return stack.readBigNumber();
+    async getAccountState(provider: ContractProvider, account: string): Promise<number> {
+        let acc = account;
+        if (account.startsWith('0x')) {
+            acc = account.substring(2);
+        }
+        const address = <TupleItemInt>{ type: 'int', value: BigInt(Number.parseInt(acc, 16)) };
+        const { stack } = await provider.get('get_account_state', [address]);
+        return Number(stack.readBigNumber());
     }
 
-    async getAccountsData(provider: ContractProvider): Promise<Dictionary<number, number>> {
+    async getAccountsData(provider: ContractProvider): Promise<AccountsDictionary> {
         const { stack } = await provider.get('get_accounts_data', []);
         const cell = stack.readCell();
-        const dict = Dictionary.load(AccountsDictionaryKey, AccountsDictionaryValue, cell);
-        return dict;
+        return Dictionary.loadDirect(AccountsDictionaryKey, AccountsDictionaryValue, cell);
     }
 
     async sendInternal(provider: ContractProvider, via: Sender) {
@@ -88,28 +100,38 @@ export class Kyc implements Contract {
         });
     }
 
-    async sendSetup(
-        provider: ContractProvider,
-        initialSeqno: number,
-        kycProvider: string,
-        fee: number,
-        accounts: Dictionary<number, number>
-    ) {
+    async sendSetup(provider: ContractProvider, kycProvider: string, fee: number) {
+        const currentSeqno = await this.getSeqno(provider);
+
         let kycSigner = kycProvider;
         if (kycProvider.startsWith('0x')) {
             kycSigner = kycProvider.substring(2);
         }
         const messageBody = beginCell()
             .storeUint(ActionExternal.Setup, 4)
-            .storeUint(initialSeqno, 32)
+            .storeUint(currentSeqno, 32)
             .storeBuffer(Buffer.from(kycSigner, 'hex'), 32)
             .storeCoins(convertNumToGram(fee))
-            .storeDict(accounts)
             .endCell();
 
-        // console.log(`EXTERNAL: ${messageBody.toBoc().toString('hex')}`);
         await provider.external(messageBody);
-        console.log(`External call executed`);
+    }
+
+    async sendSetAccState(provider: ContractProvider, account: string, state: AccountState) {
+        let acc = account;
+        if (account.startsWith('0x')) {
+            acc = account.substring(2);
+        }
+        const seqno = await this.getSeqno(provider);
+
+        const messageBody = beginCell()
+            .storeUint(ActionExternal.SetAccState, 4)
+            .storeUint(seqno, 32)
+            .storeBuffer(Buffer.from(acc, 'hex'), 32)
+            .storeUint(state, 4)
+            .endCell();
+
+        await provider.external(messageBody);
     }
 
     async sendExternal(provider: ContractProvider, action: number) {

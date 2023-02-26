@@ -1,10 +1,17 @@
 import * as fs from 'fs';
 import { Cell, Dictionary } from 'ton-core';
 import { Blockchain, OpenedContract, TreasuryContract } from '@ton-community/sandbox';
-import { Kyc } from '../src/kyc';
-import { convertGramToNum, convertNumToGram, createAccountsDictionary, createKycForDeploy } from '../src/utils/common'; // this is the interface class from tutorial 2
+import { Kyc } from '../../src/kyc';
+import {
+    AccountState,
+    convertGramToNum,
+    convertNumToGram,
+    createAccountsDictionary,
+    createKycForDeploy,
+} from '../../src/utils/common';
+import { equal } from 'assert'; // this is the interface class from tutorial 2
 
-describe('Kyc deploy tests', () => {
+describe('Deploy', () => {
     let blockchain: Blockchain;
     let wallet1: OpenedContract<TreasuryContract>;
     let kycContract: OpenedContract<Kyc>;
@@ -12,15 +19,16 @@ describe('Kyc deploy tests', () => {
     const initialSeqno = 17;
     const initialProvider = '0xc0681cb4375e11e6b2f75ff84e875c6ae02aea67d28f85c9ab2f2bb8ec382e69';
     const initialFee = 0.5;
-    const initialAccounts = createAccountsDictionary([
-        ['0', 0],
-        ['1', 1],
-        ['2', 2],
-    ]);
+    const initialAccounts: [string, AccountState][] = [
+        ['0', AccountState.Requested],
+        ['1', AccountState.Approved],
+        ['2', AccountState.Declined],
+    ];
+    const initialDict = createAccountsDictionary(initialAccounts);
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
-        const kyc = createKycForDeploy(initialSeqno, initialProvider, initialFee, initialAccounts);
+        const kyc = createKycForDeploy(initialSeqno, initialProvider, initialFee, initialDict);
 
         // initialize the blockchain sandbox
         blockchain = await Blockchain.create();
@@ -48,7 +56,10 @@ describe('Kyc deploy tests', () => {
 
     it('accounts', async () => {
         const accounts = await kycContract.getAccountsData();
-
-        console.log(`ACCCC:!! `, accounts.toString());
+        const accStates = [];
+        for (const [acc, val] of accounts) {
+            accStates.push([acc.toString(), val]);
+        }
+        expect(accStates).toEqual(initialAccounts);
     });
 });

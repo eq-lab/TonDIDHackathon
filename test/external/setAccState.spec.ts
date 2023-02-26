@@ -10,13 +10,14 @@ import {
     createKycForDeploy,
 } from '../../src/utils/common';
 
-describe('External::setup', () => {
+describe('External::setAccState', () => {
     let blockchain: Blockchain;
     let wallet1: OpenedContract<TreasuryContract>;
     let kycContract: OpenedContract<Kyc>;
 
     const initialSeqno = 17;
     const initialProvider = '0xc0681cb4375e11e6b2f75ff84e875c6ae02aea67d28f85c9ab2f2bb8ec382e69';
+
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
         ['0x0000000000000000000000000000000000000000000000000000000000000001', AccountState.Requested],
@@ -25,8 +26,8 @@ describe('External::setup', () => {
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const newProvider = '0x848fe10f13c73b5a2f67d726b560cf6236908ef317dd39dfcecf87b5cd540a5c';
-    const newFee = 1.1;
+    const newAcc = '0x0000000000000000000000000000000000000000000000000000000000000004';
+    const newAccState = AccountState.Approved;
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
@@ -42,25 +43,26 @@ describe('External::setup', () => {
     });
 
     it('seqno', async () => {
-        await kycContract.sendSetup(newProvider, newFee);
+        await kycContract.sendSetAccState(newAcc, newAccState);
         const seqno = await kycContract.getSeqno();
         expect(Number(seqno)).toEqual(initialSeqno + 1);
     });
 
     it('provider', async () => {
-        await kycContract.sendSetup(newProvider, newFee);
+        await kycContract.sendSetAccState(newAcc, newAccState);
         const provider = await kycContract.getProvider();
-        expect(provider).toEqual(newProvider);
+        expect(provider).toEqual(initialProvider);
     });
 
     it('fee', async () => {
-        await kycContract.sendSetup(newProvider, newFee);
+        await kycContract.sendSetAccState(newAcc, newAccState);
         const fee = await kycContract.getFee();
-        expect(convertGramToNum(fee)).toEqual(newFee);
+        expect(convertGramToNum(fee)).toEqual(initialFee);
     });
 
     it('accounts', async () => {
-        await kycContract.sendSetup(newProvider, newFee);
+        await kycContract.sendSetAccState(newAcc, newAccState);
+
         const accounts = await kycContract.getAccountsData();
 
         const accStates = [];
@@ -70,6 +72,7 @@ describe('External::setup', () => {
         const expected = initialAccounts.map(([acc, val]) => {
             return [Number.parseInt(acc.slice(2), 16).toString(), val];
         });
+        expected.push([Number.parseInt(newAcc, 16).toString(), newAccState]);
         expect(accStates).toEqual(expected);
     });
 });
