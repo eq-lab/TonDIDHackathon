@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { Cell, Dictionary } from 'ton-core';
-import { Blockchain, OpenedContract, TreasuryContract } from '@ton-community/sandbox';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
 import { Kyc } from '../../src/kyc';
 import {
     AccountState,
@@ -12,8 +12,8 @@ import {
 
 describe('External::setup', () => {
     let blockchain: Blockchain;
-    let wallet1: OpenedContract<TreasuryContract>;
-    let kycContract: OpenedContract<Kyc>;
+    let wallet1: SandboxContract<TreasuryContract>;
+    let kycContract: SandboxContract<Kyc>;
 
     const initialSeqno = 17;
     const initialProvider = '0xc0681cb4375e11e6b2f75ff84e875c6ae02aea67d28f85c9ab2f2bb8ec382e69';
