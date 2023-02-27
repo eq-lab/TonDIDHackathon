@@ -8,12 +8,12 @@ import {
 } from './utils/common';
 import { TupleItemInt } from 'ton-core/src/tuple/tuple';
 
-enum ActionExternal {
+export enum ActionExternal {
     Setup = 0,
     SetAccState = 1,
 }
 
-enum ActionInternal {
+export enum ActionInternal {
     RequestKyc = 0,
 }
 
@@ -42,7 +42,7 @@ export class Kyc implements Contract {
         return new Kyc(address, { code, data });
     }
 
-    async sendDeploy(provider: ContractProvider, via: Sender) {
+    async sendDeploy(provider: ContractProvider, via: Sender): Promise<void> {
         await provider.internal(via, {
             value: '0.01', // send 0.01 TON to contract for rent
             bounce: false,
@@ -81,7 +81,7 @@ export class Kyc implements Contract {
         return Dictionary.loadDirect(AccountsDictionaryKey, AccountsDictionaryValue, cell);
     }
 
-    async sendRequestKyc(provider: ContractProvider, account: string, via: Sender) {
+    async sendRequestKyc(provider: ContractProvider, account: string, via: Sender): Promise<void> {
         let acc = account;
         if (account.startsWith('0x')) {
             acc = account.substring(2);
@@ -95,14 +95,14 @@ export class Kyc implements Contract {
         await this.sendInternal(provider, message, fee, via);
     }
 
-    async sendInternal(provider: ContractProvider, message: Cell, value: bigint, via: Sender) {
+    async sendInternal(provider: ContractProvider, message: Cell, value: bigint, via: Sender): Promise<void> {
         await provider.internal(via, {
             value, // send TON for gas
             body: message,
         });
     }
 
-    async sendSetup(provider: ContractProvider, kycProvider: string, fee: number) {
+    async sendSetup(provider: ContractProvider, kycProvider: string, fee: number): Promise<void> {
         const currentSeqno = await this.getSeqno(provider);
 
         let kycSigner = kycProvider;
@@ -119,7 +119,7 @@ export class Kyc implements Contract {
         await provider.external(messageBody);
     }
 
-    async sendSetAccState(provider: ContractProvider, account: string, state: AccountState) {
+    async sendSetAccState(provider: ContractProvider, account: string, state: AccountState): Promise<void> {
         let acc = account;
         if (account.startsWith('0x')) {
             acc = account.substring(2);
@@ -136,7 +136,7 @@ export class Kyc implements Contract {
         await provider.external(messageBody);
     }
 
-    async sendExternal(provider: ContractProvider, action: number) {
+    async sendExternal(provider: ContractProvider, action: number): Promise<void> {
         const seqno = await this.getSeqno(provider);
         const messageBody = beginCell().storeUint(action, 4).storeUint(seqno, 32).storeUint(0, 256).endCell();
 
