@@ -1,16 +1,8 @@
-import * as fs from 'fs';
-import { beginCell, Cell, Dictionary, Sender } from 'ton-core';
+import { beginCell } from 'ton-core';
 import { Blockchain, OpenedContract, TreasuryContract } from '@ton-community/sandbox';
 import '@ton-community/test-utils';
 import { ActionInternal, Kyc } from '../../src/kyc';
-import {
-    AccountState,
-    convertGramToNum,
-    convertNumToGram,
-    createAccountsDictionary,
-    createKycForDeploy,
-    ExitCodes,
-} from '../../src/utils/common';
+import { AccountState, createAccountsDictionary, createKycForDeploy, ExitCodes } from '../../src/utils/common';
 
 describe('Internal::requestKyc', () => {
     let blockchain: Blockchain;
@@ -67,23 +59,25 @@ describe('Internal::requestKyc', () => {
         const requiredFee = await kycContract.getFee();
         const [userTx, updateStorageTx] = req.transactions;
 
-        const expectedFees = userBalanceBefore - requiredFee;
-
-        console.log(`User total fees?:`, userTx);
-        console.log(`Kyc total fees?:`, updateStorageTx.totalFees.coins);
-        console.log(`User delta fees:`, expectedFees - userBalanceAfter);
+        if (updateStorageTx.inMessage?.info.type !== 'internal') {
+            throw 'parse error';
+        }
+        const expectedFees =
+            userBalanceBefore - requiredFee - userTx.totalFees.coins - updateStorageTx.inMessage.info.forwardFee;
 
         expect(userBalanceAfter).toEqual(expectedFees);
         expect(contractBalanceAfter).toEqual(contractBalanceBefore + requiredFee - updateStorageTx.totalFees.coins);
 
-        // UserDelta:   0.506_475_000
-        // KycDelta:    0.495_142_000
-        // StorageFee:  0.004_858_000
-
-        // totalFees1:  0.005_808_328
-        // totalFees2:  0.004_858_000
-        console.log(`User. Before: ${userBalanceBefore}, after: ${userBalanceAfter}`);
-        console.log(`Contract. Before: ${contractBalanceBefore}, after: ${contractBalanceAfter}`);
+        // console.log(
+        //     `User. Before: ${userBalanceBefore}, after: ${userBalanceAfter}. Delta: ${
+        //         userBalanceAfter - userBalanceBefore
+        //     }`
+        // );
+        // console.log(
+        //     `Kyc contract. Before: ${contractBalanceBefore}, after: ${contractBalanceAfter}. Delta: ${
+        //         contractBalanceAfter - contractBalanceBefore
+        //     }`
+        // );
     });
 
     it('already known account', async () => {
