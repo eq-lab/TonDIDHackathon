@@ -73,7 +73,7 @@ export async function createWalletContract(client: TonClient, key: KeyPair): Pro
 
 export function createKycForDeploy(
     initialSeqno: number,
-    kycProvider: string,
+    kycProvider: Buffer,
     fee: number,
     accounts: AccountsDictionary
 ): Kyc {

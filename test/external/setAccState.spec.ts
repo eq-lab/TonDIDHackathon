@@ -9,6 +9,7 @@ import {
     createAccountsDictionary,
     createKycForDeploy,
 } from '../../src/utils/common';
+import { mnemonicToWalletKey } from 'ton-crypto';
 
 describe('External::setAccState', () => {
     let blockchain: Blockchain;
@@ -16,7 +17,8 @@ describe('External::setAccState', () => {
     let kycContract: OpenedContract<Kyc>;
 
     const initialSeqno = 17;
-    const initialProvider = '0xc0681cb4375e11e6b2f75ff84e875c6ae02aea67d28f85c9ab2f2bb8ec382e69';
+    const mnemonics 
+        = 'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle';
 
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
@@ -31,7 +33,8 @@ describe('External::setAccState', () => {
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
-        const kyc = createKycForDeploy(initialSeqno, initialProvider, initialFee, initialDict);
+        const initialProvider = await mnemonicToWalletKey(mnemonics.split(" "));
+        const kyc = createKycForDeploy(initialSeqno, initialProvider.publicKey, initialFee, initialDict);
 
         // initialize the blockchain sandbox
         blockchain = await Blockchain.create();
@@ -49,9 +52,10 @@ describe('External::setAccState', () => {
     });
 
     it('provider', async () => {
+        const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         await kycContract.sendSetAccState(newAcc, newAccState);
         const provider = await kycContract.getProvider();
-        expect(provider).toEqual(initialProvider);
+        expect(provider).toEqual(initialProvider.publicKey.toString());
     });
 
     it('fee', async () => {

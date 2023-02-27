@@ -8,7 +8,7 @@ export async function deploy(
     contractName: string,
     mnemonic: string,
     initialSeqno: number,
-    kycProvider: string,
+    kycProvider: Buffer,
     fee: number,
     accounts: AccountsDictionary
 ) {

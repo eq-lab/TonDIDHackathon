@@ -7,6 +7,7 @@ import {
     convertNumToGram,
 } from './utils/common';
 import { TupleItemInt } from 'ton-core/src/tuple/tuple';
+import { KeyPair, sha256, sign, signVerify } from 'ton-crypto';
 
 enum ActionExternal {
     Setup = 0,
@@ -21,19 +22,16 @@ export class Kyc implements Contract {
     static createForDeploy(
         code: Cell,
         initialSeqno: number,
-        kycProvider: string,
+        kycProvider: Buffer,
         fee: number,
         accounts: AccountsDictionary
     ): Kyc {
         let provider = kycProvider;
-        if (kycProvider.startsWith('0x')) {
-            provider = kycProvider.substring(2);
-        }
 
         // console.log(`KYC provider: ${provider}`);
         const data = beginCell()
             .storeUint(initialSeqno, 32)
-            .storeBuffer(Buffer.from(provider, 'hex'), 32)
+            .storeBuffer(provider)
             .storeCoins(convertNumToGram(fee))
             .storeDict(accounts)
             .endCell();
@@ -52,7 +50,7 @@ export class Kyc implements Contract {
     async getProvider(provider: ContractProvider): Promise<string> {
         const { stack } = await provider.get('get_provider', []);
         const kycProvider = stack.readBigNumber().toString(16);
-        return `0x${kycProvider}`;
+        return `${'0'.repeat(64 - kycProvider.length)}${kycProvider}`;
     }
 
     async getFee(provider: ContractProvider): Promise<bigint> {
@@ -102,18 +100,18 @@ export class Kyc implements Contract {
         });
     }
 
-    async sendSetup(provider: ContractProvider, kycProvider: string, fee: number) {
+    async sendSetup(provider: ContractProvider, oldKycProvider: KeyPair, newKycProvider: KeyPair, fee: number) {
         const currentSeqno = await this.getSeqno(provider);
-
-        let kycSigner = kycProvider;
-        if (kycProvider.startsWith('0x')) {
-            kycSigner = kycProvider.substring(2);
-        }
+        const feeCoins = convertNumToGram(fee);
+        const msgBody = beginCell().storeBuffer(newKycProvider.publicKey).storeCoins(feeCoins).endCell().toBoc();
+        const hash = await sha256(msgBody)
+        const signature = sign(hash, oldKycProvider.secretKey);
         const messageBody = beginCell()
             .storeUint(ActionExternal.Setup, 4)
             .storeUint(currentSeqno, 32)
-            .storeBuffer(Buffer.from(kycSigner, 'hex'), 32)
-            .storeCoins(convertNumToGram(fee))
+            .storeBuffer(newKycProvider.publicKey)
+            .storeCoins(feeCoins)
+            .storeBuffer(signature)
             .endCell();
 
         await provider.external(messageBody);

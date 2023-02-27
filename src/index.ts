@@ -3,6 +3,7 @@ import { readState } from './readState';
 import { Dictionary } from 'ton-core';
 import yargs, { Argv } from 'yargs';
 import { createDeployment, createTonClient } from './utils/common';
+import { mnemonicToWalletKey } from 'ton-crypto';
 
 async function main() {
     let argv = yargs
@@ -48,7 +49,8 @@ async function main() {
                 // todo: fill dict
                 // console.log(name, seqno, provider, fee, accounts, mnemonic)
                 const client = await createTonClient({ network: 'testnet' });
-                await deploy(client, name, mnemonic, seqno, provider, fee, Dictionary.empty());
+                const providerWallet = await mnemonicToWalletKey(mnemonic.split(" "));
+                await deploy(client, name, mnemonic, seqno, providerWallet.publicKey, fee, Dictionary.empty());
             }
         )
         .command(
