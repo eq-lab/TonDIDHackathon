@@ -5,8 +5,10 @@ import {
     AccountsDictionaryValue,
     AccountState,
     convertNumToGram,
+    DnsMaxLengthBytes,
+    encodeDomainName,
 } from './utils/common';
-import { TupleItemInt } from 'ton-core/src/tuple/tuple';
+import { TupleItemSlice } from 'ton-core/src/tuple/tuple';
 import { KeyPair, sha256, sign } from 'ton-crypto';
 
 export enum ActionExternal {
@@ -26,12 +28,9 @@ export class Kyc implements Contract {
         fee: number,
         accounts: AccountsDictionary
     ): Kyc {
-        let provider = kycProvider;
-
-        // console.log(`KYC provider: ${provider}`);
         const data = beginCell()
             .storeUint(initialSeqno, 32)
-            .storeBuffer(provider)
+            .storeBuffer(kycProvider)
             .storeCoins(convertNumToGram(fee))
             .storeDict(accounts)
             .endCell();
@@ -64,11 +63,11 @@ export class Kyc implements Contract {
     }
 
     async getAccountState(provider: ContractProvider, account: string): Promise<number> {
-        let acc = account;
-        if (account.startsWith('0x')) {
-            acc = account.substring(2);
-        }
-        const address = <TupleItemInt>{ type: 'int', value: BigInt(Number.parseInt(acc, 16)) };
+        const acc = encodeDomainName(account);
+        const cell = beginCell().storeBuffer(acc, DnsMaxLengthBytes).endCell();
+        //@ts-ignore
+        const address = <TupleItemSlice>{ type: 'slice', cell };
+        // @ts-ignore
         const { stack } = await provider.get('get_account_state', [address]);
         return Number(stack.readBigNumber());
     }
@@ -80,13 +79,10 @@ export class Kyc implements Contract {
     }
 
     async sendRequestKyc(provider: ContractProvider, account: string, via: Sender): Promise<void> {
-        let acc = account;
-        if (account.startsWith('0x')) {
-            acc = account.substring(2);
-        }
+        const acc = encodeDomainName(account);
         const message = beginCell()
             .storeUint(ActionInternal.RequestKyc, 4) // op
-            .storeUint(Number.parseInt(acc, 16), 256) // account
+            .storeBuffer(acc, DnsMaxLengthBytes) // DNS
             .endCell();
 
         const fee = await this.getFee(provider);
@@ -108,15 +104,16 @@ export class Kyc implements Contract {
     ): Promise<void> {
         const currentSeqno = await this.getSeqno(provider);
         const feeCoins = convertNumToGram(fee);
-        const msgBody = Buffer.alloc(47);
-        msgBody.write(newKycProvider.publicKey.toString('hex'), 'hex');
-        msgBody.writeBigUInt64BE(feeCoins, 39);
-        const hash = await sha256(msgBody);
+        const args = Buffer.alloc(47);
+        args.write(newKycProvider.publicKey.toString('hex'), 'hex');
+        args.writeBigUInt64BE(feeCoins, 39);
+        const hash = await sha256(args);
         const signature = sign(hash, oldKycProvider.secretKey);
+
         const messageBody = beginCell()
             .storeUint(ActionExternal.Setup, 4)
             .storeUint(currentSeqno, 32)
-            .storeBuffer(msgBody)
+            .storeRef(beginCell().storeBuffer(args).endCell())
             .storeBuffer(signature)
             .endCell();
 
@@ -126,20 +123,22 @@ export class Kyc implements Contract {
     async sendSetAccState(
         provider: ContractProvider,
         kycProvider: KeyPair,
-        account: KeyPair,
+        account: string,
         state: AccountState
     ): Promise<void> {
         const seqno = await this.getSeqno(provider);
-        const msgBody = Buffer.alloc(33);
-        msgBody.write(account.publicKey.toString('hex'), 'hex');
-        msgBody.writeInt8(state, 32);
+        const acc = encodeDomainName(account);
+        const msgBody = Buffer.concat([acc, Buffer.from([state])]);
+
         const hash = await sha256(msgBody);
         const signature = sign(hash, kycProvider.secretKey);
+        const dataCell = beginCell().storeBuffer(msgBody).endCell();
         const messageBody = beginCell()
             .storeUint(ActionExternal.SetAccState, 4)
             .storeUint(seqno, 32)
-            .storeBuffer(account.publicKey)
-            .storeUint(state, 8)
+            .storeRef(dataCell)
+            // .storeBuffer(acc, DnsMaxLengthBytes)
+            // .storeUint(state, 8)
             .storeBuffer(signature)
             .endCell();
 

@@ -22,13 +22,13 @@ describe('External::getAccState', () => {
 
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
-        ['0x0000000000000000000000000000000000000000000000000000000000000001', AccountState.Requested],
-        ['0x0000000000000000000000000000000000000000000000000000000000000002', AccountState.Approved],
-        ['0x0000000000000000000000000000000000000000000000000000000000000003', AccountState.Declined],
+        ['user_1.ton', AccountState.Requested],
+        ['user_2.ton', AccountState.Approved],
+        ['user_3.ton', AccountState.Declined],
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const unknownAccount = '0x0000000000000000000000000000000000000000000000000000000000000011';
+    const unknownAccount = 'user_4.ton';
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment

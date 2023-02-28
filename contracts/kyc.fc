@@ -1,3 +1,5 @@
+(slice, int) dict_get?(cell dict, int key_len, slice index) asm(index dict key_len) "DICTGET NULLSWAPIFNOT";
+
 (int, int, int, cell) load_data() {
     var data = get_data().begin_parse();
     int seqno = data~load_uint(32);
@@ -28,28 +30,28 @@
     var (stored_seqno, provider, fee, cell accounts_data) = load_data();
     throw_unless(32, stored_seqno == msg_seqno);
 
-    int remaining_bits = in_msg.slice_bits();
-    slice msg_data = in_msg~load_bits(remaining_bits - 512);
     slice signature = in_msg~load_bits(512);
+    slice args = in_msg~load_ref().begin_parse();
     in_msg.end_parse();
-    int data_hash = string_hash(msg_data);
+
+    int data_hash = string_hash(args);
     throw_unless(33, check_signature(data_hash, signature, provider));
 
     accept_message();
 
     if (operation == 0) { ;; update params    
-        int new_provider = msg_data~load_uint(256);
-        int new_fee = msg_data~load_uint(120);
-        msg_data.end_parse();
+        int new_provider = args~load_uint(256);
+        int new_fee = args~load_uint(120);
+        args.end_parse();
 
         save_data(stored_seqno + 1, new_provider, new_fee, accounts_data);
         return ();
 
     } elseif (operation == 1) { ;; kyc provider acc status set
-        int parsed_account = msg_data~load_uint(256);
-        slice status = msg_data~load_bits(8);
-        msg_data.end_parse();
-        accounts_data~udict_set(256, parsed_account, status);
+        slice parsed_account = args~load_bits(1008);
+        slice status = args~load_bits(8);
+        args.end_parse();
+        accounts_data~dict_set(1008, parsed_account, status);
     }
 
     save_data(stored_seqno + 1, provider, fee, accounts_data);
@@ -61,19 +63,19 @@
     int operation = in_msg_body~load_uint(4);
     if (operation == 0) { ;; request KYC check for account
         throw_if(97, msg_value != fee);
-        int account = in_msg_body~load_uint(256);
-        (_, int existed) = accounts_data.udict_get?(256, account);
+        slice account = in_msg_body~load_bits(1008);
+        (_, int existed) = accounts_data.dict_get?(1008, account);
         throw_if(96, existed);
         slice val = begin_cell().store_uint(1, 8).end_cell().begin_parse();
-        accounts_data~udict_set(256, account, val);
+        accounts_data~dict_set(1008, account, val);
         save_data(stored_seqno, provider, fee, accounts_data);
     }
     return ();
 }
 
-int get_account_state(int account) method_id {
+int get_account_state(slice account) method_id {
 	var (_, _, _, accounts_data) = load_data();
-	(slice status, int success) = accounts_data.udict_get?(256, account);
+	(slice status, int success) = accounts_data.dict_get?(1008, account);
 	throw_unless(98, success);
 	return status~load_uint(8);
 }

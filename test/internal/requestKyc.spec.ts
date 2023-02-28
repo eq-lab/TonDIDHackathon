@@ -2,7 +2,13 @@ import { beginCell } from 'ton-core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
 import '@ton-community/test-utils';
 import { ActionInternal, Kyc } from '../../src/kyc';
-import { AccountState, createAccountsDictionary, createKycForDeploy, ExitCodes } from '../../src/utils/common';
+import {
+    AccountState,
+    createAccountsDictionary,
+    createKycForDeploy,
+    encodeDomainName,
+    ExitCodes,
+} from '../../src/utils/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 
 describe('Internal::requestKyc', () => {
@@ -17,13 +23,13 @@ describe('Internal::requestKyc', () => {
 
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
-        ['0x0000000000000000000000000000000000000000000000000000000000000001', AccountState.Requested],
-        ['0x0000000000000000000000000000000000000000000000000000000000000002', AccountState.Approved],
-        ['0x0000000000000000000000000000000000000000000000000000000000000003', AccountState.Declined],
+        ['user_1.ton', AccountState.Requested],
+        ['user_2.ton', AccountState.Approved],
+        ['user_3.ton', AccountState.Declined],
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const unknownAccount = '0x0000000000000000000000000000000000000000000000000000000000000011';
+    const unknownAccount = 'user_4.ton';
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
@@ -103,13 +109,10 @@ describe('Internal::requestKyc', () => {
         const stateBeforeRequest = await kycContract.getAccountState(unknownAccount);
         expect(stateBeforeRequest).toEqual(AccountState.Unknown);
 
-        let acc = unknownAccount;
-        if (unknownAccount.startsWith('0x')) {
-            acc = unknownAccount.substring(2);
-        }
+        let acc = encodeDomainName(unknownAccount);
         const message = beginCell()
             .storeUint(ActionInternal.RequestKyc, 4) // op
-            .storeUint(Number.parseInt(acc, 16), 256) // account
+            .storeBuffer(acc) // account
             .endCell();
 
         const fee = (await kycContract.getFee()) - 10n;

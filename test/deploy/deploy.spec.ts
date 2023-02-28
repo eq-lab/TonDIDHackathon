@@ -6,6 +6,7 @@ import {
     convertNumToGram,
     createAccountsDictionary,
     createKycForDeploy,
+    decodeDomainName,
 } from '../../src/utils/common';
 import { equal } from 'assert'; // this is the interface class from tutorial 2
 import { mnemonicToWalletKey } from 'ton-crypto';
@@ -20,9 +21,9 @@ describe('Deploy', () => {
         'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle';
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
-        ['0', AccountState.Requested],
-        ['1', AccountState.Approved],
-        ['2', AccountState.Declined],
+        ['user_1.ton', AccountState.Requested],
+        ['user_2.ton', AccountState.Approved],
+        ['user_3.ton', AccountState.Declined],
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
@@ -60,7 +61,7 @@ describe('Deploy', () => {
         const accounts = await kycContract.getAccountsData();
         const accStates = [];
         for (const [acc, val] of accounts) {
-            accStates.push([acc.toString(), val]);
+            accStates.push([decodeDomainName(acc), val]);
         }
         expect(accStates).toEqual(initialAccounts);
     });

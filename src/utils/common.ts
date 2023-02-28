@@ -6,6 +6,7 @@ import { Kyc } from '../kyc';
 import { KeyPair, mnemonicToWalletKey } from 'ton-crypto';
 import { beginCell, Contract, Dictionary, Sender } from 'ton-core';
 import { Config, getHttpEndpoint } from '@orbs-network/ton-access';
+import { start } from 'repl';
 
 export enum AccountState {
     Unknown = 0,
@@ -20,11 +21,13 @@ export enum ExitCodes {
     IncorrectFees = 97,
 }
 
+export const DnsMaxLengthBytes = 126;
+
 const deploymentPath = `data${path.sep}deployment.json`;
 
-export const AccountsDictionaryKey = Dictionary.Keys.BigUint(256);
+export const AccountsDictionaryKey = Dictionary.Keys.Buffer(DnsMaxLengthBytes);
 export const AccountsDictionaryValue = Dictionary.Values.Uint(8);
-export type AccountsDictionary = Dictionary<bigint, number>;
+export type AccountsDictionary = Dictionary<Buffer, number>;
 
 export interface ContractInfo {
     name: string;
@@ -100,11 +103,7 @@ export function createAccountsDictionary(initialStates?: [string, number][]): Ac
             if (account.startsWith('0x')) {
                 acc = account.substring(2);
             }
-            dict.set(
-                BigInt(Number.parseInt(acc, 16)),
-                // beginCell().storeUint(state, 8).endCell()
-                state
-            );
+            dict.set(encodeDomainName(account), state);
         }
     }
     return dict;
@@ -125,4 +124,18 @@ export function convertNumToGram(num: number): bigint {
 
 export function convertGramToNum(gram: bigint): number {
     return Number(gram) / 1000000000;
+}
+
+export function encodeDomainName(name: string): Buffer {
+    if (!name.endsWith('.ton')) {
+        throw `domain name must contains .ton!`;
+    }
+    const buffer = Buffer.from(name, 'utf8');
+    const filler = Buffer.alloc(DnsMaxLengthBytes - buffer.length, 0);
+    return Buffer.concat([filler, buffer]);
+}
+
+export function decodeDomainName(encodedName: Buffer): string {
+    const startIndex = encodedName.findIndex((byte) => byte !== 0);
+    return encodedName.subarray(startIndex).toString('utf8');
 }

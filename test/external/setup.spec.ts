@@ -1,13 +1,11 @@
-import * as fs from 'fs';
-import { Cell, Dictionary } from 'ton-core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
 import { Kyc } from '../../src/kyc';
 import {
     AccountState,
     convertGramToNum,
-    convertNumToGram,
     createAccountsDictionary,
     createKycForDeploy,
+    decodeDomainName,
 } from '../../src/utils/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 
@@ -21,9 +19,9 @@ describe('External::setup', () => {
         'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle';
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
-        ['0x0000000000000000000000000000000000000000000000000000000000000001', AccountState.Requested],
-        ['0x0000000000000000000000000000000000000000000000000000000000000002', AccountState.Approved],
-        ['0x0000000000000000000000000000000000000000000000000000000000000003', AccountState.Declined],
+        ['user_1.ton', AccountState.Requested],
+        ['user_2.ton', AccountState.Approved],
+        ['user_3.ton', AccountState.Declined],
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
@@ -77,11 +75,8 @@ describe('External::setup', () => {
 
         const accStates = [];
         for (const [acc, val] of accounts) {
-            accStates.push([acc.toString(), val]);
+            accStates.push([decodeDomainName(acc), val]);
         }
-        const expected = initialAccounts.map(([acc, val]) => {
-            return [Number.parseInt(acc.slice(2), 16).toString(), val];
-        });
-        expect(accStates).toEqual(expected);
+        expect(accStates).toEqual(initialAccounts);
     });
 });
