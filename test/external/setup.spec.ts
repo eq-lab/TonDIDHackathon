@@ -50,7 +50,7 @@ describe('External::setup', () => {
     it('seqno', async () => {
         const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
-        await kycContract.sendSetup(oldProvider, newProvider, newFee);
+        await kycContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
         const seqno = await kycContract.getSeqno();
         expect(Number(seqno)).toEqual(initialSeqno + 1);
     });
@@ -58,7 +58,7 @@ describe('External::setup', () => {
     it('provider', async () => {
         const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
-        await kycContract.sendSetup(oldProvider, newProvider, newFee);
+        await kycContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
         const provider = await kycContract.getProvider();
         expect(provider).toEqual(newProvider.publicKey.toString('hex'));
     });
@@ -66,7 +66,7 @@ describe('External::setup', () => {
     it('fee', async () => {
         const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
-        await kycContract.sendSetup(oldProvider, newProvider, newFee);
+        await kycContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
         const fee = await kycContract.getFee();
         expect(convertGramToNum(fee)).toEqual(newFee);
     });
@@ -74,7 +74,7 @@ describe('External::setup', () => {
     it('accounts', async () => {
         const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
-        await kycContract.sendSetup(oldProvider, newProvider, newFee);
+        await kycContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
         const accounts = await kycContract.getAccountsData();
 
         const accStates = [];
@@ -94,7 +94,7 @@ describe('External::setup', () => {
             console.error = (...args) => {
                 errorArgs = args;
             };
-            await kycContract.sendSetup(wrongKycProvider, newProvider, newFee);
+            await kycContract.sendSetup(wrongKycProvider, newProvider.publicKey.toString('hex'), newFee);
         } catch (err) {
             expect(err).toEqual(Error('Error executing transaction'));
         } finally {

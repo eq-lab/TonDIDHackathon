@@ -99,13 +99,13 @@ export class Kyc implements Contract {
     async sendSetup(
         provider: ContractProvider,
         oldKycProvider: KeyPair,
-        newKycProvider: KeyPair,
+        newKycProvider: string,
         fee: number
     ): Promise<void> {
         const currentSeqno = await this.getSeqno(provider);
         const feeCoins = convertNumToGram(fee);
         const args = Buffer.alloc(47);
-        args.write(newKycProvider.publicKey.toString('hex'), 'hex');
+        args.write(newKycProvider, 'hex');
         args.writeBigUInt64BE(feeCoins, 39);
         const hash = await sha256(args);
         const signature = sign(hash, oldKycProvider.secretKey);
