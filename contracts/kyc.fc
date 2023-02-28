@@ -40,12 +40,9 @@
     accept_message();
 
     if (operation == 0) { ;; update params    
-        int new_provider = args~load_uint(256);
-        int new_fee = args~load_uint(120);
+        provider = args~load_uint(256);
+        fee = args~load_uint(120);
         args.end_parse();
-
-        save_data(stored_seqno + 1, new_provider, new_fee, accounts_data);
-        return ();
 
     } elseif (operation == 1) { ;; kyc provider acc status set
         slice parsed_account = args~load_bits(1008);
