@@ -2,11 +2,10 @@ import { Address, Cell, TonClient, WalletContractV4 } from 'ton';
 import * as fs from 'fs';
 import path from 'path';
 import { mnemonicToPrivateKey } from 'ton-crypto/dist/mnemonic/mnemonic';
-import { Kyc } from '../kyc';
-import { KeyPair, mnemonicToWalletKey } from 'ton-crypto';
-import { beginCell, Contract, Dictionary, Sender } from 'ton-core';
+import { Kyc } from '../wrappers/kyc';
+import { KeyPair } from 'ton-crypto';
+import { Dictionary } from 'ton-core';
 import { Config, getHttpEndpoint } from '@orbs-network/ton-access';
-import { start } from 'repl';
 
 export enum AccountState {
     Unknown = 0,

@@ -1,14 +1,12 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
-import { Kyc } from '../../src/kyc';
+import { Kyc } from '../../src/wrappers/kyc';
 import {
     AccountState,
     convertGramToNum,
-    convertNumToGram,
     createAccountsDictionary,
     createKycForDeploy,
     decodeDomainName,
-} from '../../src/utils/common';
-import { equal } from 'assert'; // this is the interface class from tutorial 2
+} from '../../src/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 
 describe('Deploy', () => {

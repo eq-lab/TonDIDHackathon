@@ -1,7 +1,7 @@
 import { beginCell } from 'ton-core';
 import { Blockchain, SandboxContract, SendMessageResult, TreasuryContract } from '@ton-community/sandbox';
 import '@ton-community/test-utils';
-import { ActionInternal, Kyc } from '../../src/kyc';
+import { ActionInternal, Kyc } from '../../src/wrappers/kyc';
 import {
     AccountState,
     createAccountsDictionary,
@@ -9,7 +9,7 @@ import {
     decodeDomainName,
     encodeDomainName,
     ExitCodes,
-} from '../../src/utils/common';
+} from '../../src/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 import * as util from 'util';
 

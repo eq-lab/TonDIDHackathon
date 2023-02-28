@@ -17,7 +17,7 @@ import {
     convertNumToGram,
     DnsMaxLengthBytes,
     encodeDomainName,
-} from './utils/common';
+} from '../common';
 import { TupleItemSlice } from 'ton-core/src/tuple/tuple';
 import { KeyPair, sha256, sign } from 'ton-crypto';
 

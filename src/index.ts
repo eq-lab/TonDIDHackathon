@@ -1,6 +1,6 @@
-import { deploy } from './deploy';
-import { readState } from './readState';
-import { setup } from './setup';
+import { deploy } from './methods/deploy';
+import { readState } from './methods/readState';
+import { setup } from './methods/setup';
 import yargs, { Argv } from 'yargs';
 import {
     AccountState,
@@ -9,7 +9,8 @@ import {
     createKycContract,
     createTonClient,
     decodeDomainName,
-} from './utils/common';
+} from './common';
+import { request } from './methods/request';
 
 async function main() {
     let argv = yargs
@@ -36,7 +37,7 @@ async function main() {
                     .option('accounts', {
                         describe: 'Already KYC-passed accounts. Format: address_0,address_1,address_N',
                         alias: 'a',
-                        default: '[]',
+                        type: 'string',
                     })
                     .option('mnemonic', {
                         describe: 'Mnemonic for signer acc',
@@ -51,8 +52,11 @@ async function main() {
                         required: true,
                     }),
             async ({ name, seqno, provider, fee, accounts, mnemonic }) => {
-                const accs: [string, AccountState][] = accounts.split(',').map((x) => [x, AccountState.Approved]);
-                const initDict = createAccountsDictionary(accs);
+                let initDict = createAccountsDictionary();
+                if (accounts !== undefined) {
+                    const accs: [string, AccountState][] = accounts.split(',').map((x) => [x, AccountState.Approved]);
+                    initDict = createAccountsDictionary(accs);
+                }
                 const client = await createTonClient({ network: 'testnet' });
                 let providerPublicKey = provider;
                 if (provider.startsWith('0x')) {
@@ -157,6 +161,57 @@ async function main() {
 
                 const client = await createTonClient({ network: 'testnet' });
                 await setup(client, contractInfo.address, mnemonic, provider, fee);
+            }
+        )
+        .command(
+            'send-request',
+            'Request KYC for a new domain name.',
+            (yargs: Argv) =>
+                yargs
+                    .option('account', {
+                        describe: 'TON Domain name',
+                        alias: 'd',
+                        type: 'string',
+                        required: true,
+                    })
+                    .option('mnemonic', {
+                        describe: 'Mnemonic for signer acc',
+                        alias: 'm',
+                        default:
+                            'donkey similar else ramp cotton shift web rabbit fall scene sea position mouse drill wedding night grant remove winter pilot sweet dry flight world',
+                    })
+                    .option('name', {
+                        describe: 'Contract name for fast searching',
+                        alias: 'n',
+                        type: 'string',
+                        required: true,
+                    })
+                    .option('address', {
+                        describe: 'Base64-url address of KYC provider',
+                        alias: 'a',
+                        type: 'string',
+                    }),
+            async ({ account, mnemonic, name, address }) => {
+                if (name === undefined && address === undefined) {
+                    throw '--name or --address must be presented!';
+                }
+                if (name !== undefined && address !== undefined) {
+                    throw 'only one of --name or --address must be presented!';
+                }
+                const deployment = createDeployment();
+                let contractInfo;
+                if (name !== undefined) {
+                    contractInfo = deployment.getContractWithName(name);
+                }
+                if (address !== undefined) {
+                    contractInfo = deployment.getContractWithAddress(address);
+                }
+                if (contractInfo === undefined) {
+                    throw 'unknown contract';
+                }
+
+                const client = await createTonClient({ network: 'testnet' });
+                await request(client, contractInfo, mnemonic, account);
             }
         )
         .command(

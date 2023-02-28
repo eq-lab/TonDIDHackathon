@@ -1,6 +1,6 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
 import '@ton-community/test-utils';
-import { ActionExternal, Kyc } from '../../src/kyc';
+import { ActionExternal, Kyc } from '../../src/wrappers/kyc';
 import {
     AccountState,
     convertGramToNum,
@@ -9,7 +9,7 @@ import {
     decodeDomainName,
     encodeDomainName,
     ExitCodes,
-} from '../../src/utils/common';
+} from '../../src/common';
 import { mnemonicNew, mnemonicToWalletKey, sha256, sign } from 'ton-crypto';
 import { beginCell } from 'ton-core';
 

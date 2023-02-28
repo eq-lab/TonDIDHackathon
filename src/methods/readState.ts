@@ -1,5 +1,5 @@
 import { TonClient } from 'ton';
-import { AccountState, convertGramToNum, createKycContract } from './utils/common';
+import { AccountState, convertGramToNum, createKycContract } from '../common';
 
 export async function readState(client: TonClient, contractAddress: string) {
     console.log(`\nRead state`);

@@ -1,7 +1,6 @@
-import { Cell, TonClient } from 'ton';
-import { Dictionary } from 'ton-core';
-import { AccountsDictionary, createDeployment, createKycForDeploy, createWalletContract, sleep } from './utils/common';
-import { mnemonicToWalletKey } from 'ton-crypto'; // this is the interface class from step 7
+import { TonClient } from 'ton';
+import { AccountsDictionary, createDeployment, createKycForDeploy, createWalletContract, sleep } from '../common';
+import { mnemonicToWalletKey } from 'ton-crypto';
 
 export async function deploy(
     client: TonClient,

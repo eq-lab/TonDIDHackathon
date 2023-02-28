@@ -1,14 +1,6 @@
-import * as fs from 'fs';
-import { Cell, Dictionary } from 'ton-core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
-import { Kyc } from '../../src/kyc';
-import {
-    AccountState,
-    convertGramToNum,
-    convertNumToGram,
-    createAccountsDictionary,
-    createKycForDeploy,
-} from '../../src/utils/common';
+import { Kyc } from '../../src/wrappers/kyc';
+import { AccountState, createAccountsDictionary, createKycForDeploy } from '../../src/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 
 describe('External::getAccState', () => {
