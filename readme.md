@@ -39,7 +39,8 @@ fift -Icontracts/fift-lib -s contracts/externalIncrement.fif EQCqzqAl5Yg4sj0jk5B
 ```bash
 yarn install
 yarn build && yarn start deploy \
-  --name 'test_contract'
+  --name 'test_contract' \
+  --accounts 'user_1.ton,user_2.ton,user_3.ton'
 ``` 
 
 #### Read state

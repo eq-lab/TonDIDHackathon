@@ -1,4 +1,14 @@
-import { Contract, ContractProvider, Sender, Address, Cell, contractAddress, beginCell, Dictionary } from 'ton-core';
+import {
+    Contract,
+    ContractProvider,
+    Sender,
+    Address,
+    Cell,
+    contractAddress,
+    beginCell,
+    Dictionary,
+    TupleReader,
+} from 'ton-core';
 import {
     AccountsDictionary,
     AccountsDictionaryKey,
@@ -73,8 +83,17 @@ export class Kyc implements Contract {
     }
 
     async getAccountsData(provider: ContractProvider): Promise<AccountsDictionary> {
-        const { stack } = await provider.get('get_accounts_data', []);
-        const cell = stack.readCell();
+        let tupleReader: TupleReader;
+        try {
+            const { stack } = await provider.get('get_accounts_data', []);
+            tupleReader = stack;
+        } catch (e) {
+            if ((e as Error).message === 'Unsupported stack item type: list') {
+                return Dictionary.empty();
+            }
+            throw e;
+        }
+        const cell = tupleReader.readCell();
         return Dictionary.loadDirect(AccountsDictionaryKey, AccountsDictionaryValue, cell);
     }
 

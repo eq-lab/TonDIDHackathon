@@ -1,5 +1,5 @@
 import { TonClient } from 'ton';
-import { convertGramToNum, createKycContract } from './utils/common';
+import { AccountState, convertGramToNum, createKycContract } from './utils/common';
 
 export async function readState(client: TonClient, contractAddress: string) {
     console.log(`\nRead state`);
@@ -16,7 +16,21 @@ export async function readState(client: TonClient, contractAddress: string) {
     console.log(`seqno = ${seqnoValue.toString()}`);
 
     const accounts = await kyc.getAccountsData();
-    // accounts.
-    //     .loadDict<string, number>()
-    console.log(`accounts = ${3}`);
+    let numOfRequested = 0;
+    let numOfApproved = 0;
+    let numOfDeclined = 0;
+    for (const [, state] of accounts) {
+        if (state == AccountState.Requested) {
+            numOfRequested++;
+        } else if (state == AccountState.Approved) {
+            numOfApproved++;
+        } else if (state == AccountState.Declined) {
+            numOfDeclined++;
+        }
+    }
+
+    console.log(`Accounts:`);
+    console.log(`  Num of requests = ${numOfRequested}`);
+    console.log(`  Num of approved = ${numOfApproved}`);
+    console.log(`  Num of declined = ${numOfDeclined}`);
 }

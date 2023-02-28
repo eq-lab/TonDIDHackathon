@@ -1,10 +1,15 @@
 import { deploy } from './deploy';
 import { readState } from './readState';
 import { setup } from './setup';
-import { Dictionary } from 'ton-core';
 import yargs, { Argv } from 'yargs';
-import { createDeployment, createTonClient } from './utils/common';
-import { mnemonicNew, mnemonicToWalletKey } from 'ton-crypto';
+import {
+    AccountState,
+    createAccountsDictionary,
+    createDeployment,
+    createKycContract,
+    createTonClient,
+    decodeDomainName,
+} from './utils/common';
 
 async function main() {
     let argv = yargs
@@ -21,7 +26,7 @@ async function main() {
                     .option('provider', {
                         describe: 'Public key of KYC provider',
                         alias: 'p',
-                        default: '0xc0681cb4375e11e6b2f75ff84e875c6ae02aea67d28f85c9ab2f2bb8ec382e69',
+                        default: '0x0f52adfb686efdf38c28c1009af9efcd11b9a5ae186f5d8b8e62ab9065052c97',
                     })
                     .option('fee', {
                         describe: 'Fee amount in TON coins',
@@ -29,8 +34,7 @@ async function main() {
                         default: 0.01,
                     })
                     .option('accounts', {
-                        describe:
-                            'Already KYC-passed accounts. Format: [[address_0,boolean_0],..,[address_N,boolean_N]]',
+                        describe: 'Already KYC-passed accounts. Format: address_0,address_1,address_N',
                         alias: 'a',
                         default: '[]',
                     })
@@ -47,11 +51,18 @@ async function main() {
                         required: true,
                     }),
             async ({ name, seqno, provider, fee, accounts, mnemonic }) => {
-                // todo: fill dict
-                // console.log(name, seqno, provider, fee, accounts, mnemonic)
+                const accs: [string, AccountState][] = accounts.split(',').map((x) => [x, AccountState.Approved]);
+                const initDict = createAccountsDictionary(accs);
                 const client = await createTonClient({ network: 'testnet' });
-                const providerWallet = await mnemonicToWalletKey(mnemonic.split(' '));
-                await deploy(client, name, mnemonic, seqno, providerWallet.publicKey, fee, Dictionary.empty());
+                let providerPublicKey = provider;
+                if (provider.startsWith('0x')) {
+                    providerPublicKey = provider.slice(2);
+                }
+                const providerBuffer = Buffer.from(providerPublicKey, 'hex');
+                if (providerBuffer.length != 32) {
+                    throw `incorrect provider public key length! Expected: 32, actual: ${providerBuffer.length}`;
+                }
+                await deploy(client, name, mnemonic, seqno, providerBuffer, fee, initDict);
             }
         )
         .command(
@@ -146,6 +157,55 @@ async function main() {
 
                 const client = await createTonClient({ network: 'testnet' });
                 await setup(client, contractInfo.address, mnemonic, provider, fee);
+            }
+        )
+        .command(
+            'read-requested',
+            'Print all KYC-requested accounts',
+            (yargs: Argv) =>
+                yargs
+                    .option('name', {
+                        describe: 'Contract name for fast searching',
+                        alias: 'n',
+                        type: 'string',
+                        required: true,
+                    })
+                    .option('address', {
+                        describe: 'Base64-url address of KYC provider',
+                        alias: 'a',
+                        type: 'string',
+                    }),
+            async ({ name, address }) => {
+                if (name === undefined && address === undefined) {
+                    throw '--name or --address must be presented!';
+                }
+                if (name !== undefined && address !== undefined) {
+                    throw 'only one of --name or --address must be presented!';
+                }
+                const deployment = createDeployment();
+                let contractInfo;
+                if (name !== undefined) {
+                    contractInfo = deployment.getContractWithName(name);
+                }
+                if (address !== undefined) {
+                    contractInfo = deployment.getContractWithAddress(address);
+                }
+                if (contractInfo === undefined) {
+                    throw 'unknown contract';
+                }
+                const client = await createTonClient({ network: 'testnet' });
+
+                const kycContract = await createKycContract(contractInfo.address);
+                const kyc = client.open(kycContract);
+                const accounts = await kyc.getAccountsData();
+                const requestedAccounts: string[] = [];
+                for (const [acc, state] of accounts) {
+                    if (state === AccountState.Requested) {
+                        requestedAccounts.push(decodeDomainName(acc));
+                    }
+                }
+                console.log(`KYC-requested accounts (${requestedAccounts.length}):`);
+                requestedAccounts.forEach((acc) => console.log(`  ${acc}`));
             }
         );
     argv.parse();
