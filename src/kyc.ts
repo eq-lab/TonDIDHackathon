@@ -105,7 +105,7 @@ export class Kyc implements Contract {
         const feeCoins = convertNumToGram(fee);
         const msgBody = Buffer.alloc(47); 
         msgBody.write(newKycProvider.publicKey.toString('hex'), 'hex');
-        msgBody.writeDoubleLE(feeCoins, 32);
+        msgBody.writeBigUInt64BE(feeCoins, 39);
         const hash = await sha256(msgBody);
         const signature = sign(hash, oldKycProvider.secretKey);
         const messageBody = beginCell()

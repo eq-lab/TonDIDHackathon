@@ -16,9 +16,9 @@ export enum AccountState {
 
 const deploymentPath = `data${path.sep}deployment.json`;
 
-export const AccountsDictionaryKey = Dictionary.Keys.Uint(256);
+export const AccountsDictionaryKey = Dictionary.Keys.BigUint(256);
 export const AccountsDictionaryValue = Dictionary.Values.Uint(8);
-export type AccountsDictionary = Dictionary<number, number>;
+export type AccountsDictionary = Dictionary<bigint, number>;
 
 export interface ContractInfo {
     name: string;
@@ -95,7 +95,7 @@ export function createAccountsDictionary(initialStates?: [string, number][]): Ac
                 acc = account.substring(2);
             }
             dict.set(
-                Number.parseInt(acc, 16),
+                BigInt(Number.parseInt(acc, 16)),
                 // beginCell().storeUint(state, 8).endCell()
                 state
             );
@@ -113,8 +113,8 @@ export function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function convertNumToGram(num: number): number {
-    return num * 1000000000;
+export function convertNumToGram(num: number): bigint {
+    return BigInt(num * 1000000000);
 }
 
 export function convertGramToNum(gram: bigint): number {

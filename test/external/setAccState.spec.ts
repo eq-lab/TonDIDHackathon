@@ -84,7 +84,7 @@ describe('External::setAccState', () => {
         const expected = initialAccounts.map(([acc, val]) => {
             return [Number.parseInt(acc.slice(2), 16).toString(), val];
         });
-        expected.push([Number.parseInt(newAcc.publicKey.toString('hex'), 16).toString(), newAccState]);
+        expected.push([BigInt("0x" + newAcc.publicKey.toString('hex')).toString(), newAccState]);
         expect(accStates).toEqual(expected);
     });
 });
