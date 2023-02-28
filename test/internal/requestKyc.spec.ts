@@ -1,15 +1,17 @@
 import { beginCell } from 'ton-core';
-import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
+import { Blockchain, SandboxContract, SendMessageResult, TreasuryContract } from '@ton-community/sandbox';
 import '@ton-community/test-utils';
 import { ActionInternal, Kyc } from '../../src/kyc';
 import {
     AccountState,
     createAccountsDictionary,
     createKycForDeploy,
+    decodeDomainName,
     encodeDomainName,
     ExitCodes,
 } from '../../src/utils/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
+import * as util from 'util';
 
 describe('Internal::requestKyc', () => {
     let blockchain: Blockchain;
@@ -29,7 +31,7 @@ describe('Internal::requestKyc', () => {
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const unknownAccount = 'user_4.ton';
+    const newAccount = 'user_4.ton';
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
@@ -46,20 +48,37 @@ describe('Internal::requestKyc', () => {
     });
 
     it('unknown account', async () => {
-        const stateBeforeRequest = await kycContract.getAccountState(unknownAccount);
+        const stateBeforeRequest = await kycContract.getAccountState(newAccount);
         expect(stateBeforeRequest).toEqual(AccountState.Unknown);
 
         const userBalanceBefore = (await blockchain.getContract(userWallet.address)).balance;
         const contractBalanceBefore = (await blockchain.getContract(kycContract.address)).balance;
 
-        const req = await kycContract.sendRequestKyc(unknownAccount, userWallet.getSender());
+        const logs: string[] = [];
+        const prevConsoleLog = console.log;
+        console.log = (...args) => {
+            logs.push(util.format(args));
+        };
+        let req: SendMessageResult;
+        try {
+            req = await kycContract.sendRequestKyc(newAccount, userWallet.getSender());
+        } finally {
+            console.log = prevConsoleLog;
+        }
+        // console.log(`LOGS:`, logs);
+        expect(logs.length).toEqual(1);
+        const startIdx = logs[0].indexOf('CS{Cell{00fd0') + 13;
+        const buff = Buffer.from(logs[0].slice(startIdx, startIdx + 253), 'hex');
+        const domainName = decodeDomainName(buff);
+
+        expect(domainName).toEqual(newAccount);
         expect(req.transactions).toHaveTransaction({
             from: userWallet.address,
             to: kycContract.address,
             success: true,
         });
 
-        const stateAfterRequest = await kycContract.getAccountState(unknownAccount);
+        const stateAfterRequest = await kycContract.getAccountState(newAccount);
         expect(stateAfterRequest).toEqual(AccountState.Requested);
 
         const userBalanceAfter = (await blockchain.getContract(userWallet.address)).balance;
@@ -106,10 +125,10 @@ describe('Internal::requestKyc', () => {
     });
 
     it('incorrect fee amount', async () => {
-        const stateBeforeRequest = await kycContract.getAccountState(unknownAccount);
+        const stateBeforeRequest = await kycContract.getAccountState(newAccount);
         expect(stateBeforeRequest).toEqual(AccountState.Unknown);
 
-        let acc = encodeDomainName(unknownAccount);
+        let acc = encodeDomainName(newAccount);
         const message = beginCell()
             .storeUint(ActionInternal.RequestKyc, 4) // op
             .storeBuffer(acc) // account
@@ -124,7 +143,7 @@ describe('Internal::requestKyc', () => {
             exitCode: ExitCodes.IncorrectFees,
         });
 
-        const stateAfterRequest = await kycContract.getAccountState(unknownAccount);
+        const stateAfterRequest = await kycContract.getAccountState(newAccount);
         expect(stateAfterRequest).toEqual(AccountState.Unknown);
     });
 });

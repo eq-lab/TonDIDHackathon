@@ -137,8 +137,6 @@ export class Kyc implements Contract {
             .storeUint(ActionExternal.SetAccState, 4)
             .storeUint(seqno, 32)
             .storeRef(dataCell)
-            // .storeBuffer(acc, DnsMaxLengthBytes)
-            // .storeUint(state, 8)
             .storeBuffer(signature)
             .endCell();
 

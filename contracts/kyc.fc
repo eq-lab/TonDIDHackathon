@@ -67,6 +67,7 @@
         slice val = begin_cell().store_uint(1, 8).end_cell().begin_parse();
         accounts_data~dict_set(1008, account, val);
         save_data(stored_seqno, provider, fee, accounts_data);
+        account~dump();
     }
     return ();
 }
