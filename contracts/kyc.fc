@@ -1,3 +1,4 @@
+;; Missed wrapper of DICTGET opcode for dictionaries with non-int keys
 (slice, int) dict_get?(cell dict, int key_len, slice index) asm(index dict key_len) "DICTGET NULLSWAPIFNOT";
 
 (int, int, int, cell) load_data() {
@@ -28,14 +29,14 @@
     int operation = in_msg~load_uint(4);
     int msg_seqno = in_msg~load_uint(32);
     var (stored_seqno, provider, fee, cell accounts_data) = load_data();
-    throw_unless(32, stored_seqno == msg_seqno);
+    throw_unless(70, stored_seqno == msg_seqno);
 
     slice signature = in_msg~load_bits(512);
     slice args = in_msg~load_ref().begin_parse();
     in_msg.end_parse();
 
     int data_hash = string_hash(args);
-    throw_unless(33, check_signature(data_hash, signature, provider));
+    throw_unless(71, check_signature(data_hash, signature, provider));
 
     accept_message();
 
@@ -59,10 +60,10 @@
     var (stored_seqno, provider, fee, cell accounts_data) = load_data();
     int operation = in_msg_body~load_uint(4);
     if (operation == 0) { ;; request KYC check for account
-        throw_if(97, msg_value != fee);
+        throw_if(72, msg_value != fee);
         slice account = in_msg_body~load_bits(1008);
         (_, int existed) = accounts_data.dict_get?(1008, account);
-        throw_if(96, existed);
+        throw_if(73, existed);
         slice val = begin_cell().store_uint(1, 8).end_cell().begin_parse();
         accounts_data~dict_set(1008, account, val);
         save_data(stored_seqno, provider, fee, accounts_data);
@@ -73,8 +74,10 @@
 int get_account_state(slice account) method_id {
 	var (_, _, _, accounts_data) = load_data();
 	(slice status, int success) = accounts_data.dict_get?(1008, account);
-	throw_unless(98, success);
-	return status~load_uint(8);
+    if (success) {
+        return status~load_uint(8);
+    }
+	return 0;
 }
 
 int get_seqno() method_id {

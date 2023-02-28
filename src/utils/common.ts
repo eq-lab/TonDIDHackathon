@@ -16,9 +16,10 @@ export enum AccountState {
 }
 
 export enum ExitCodes {
-    WrongSignature = 33,
-    AccountAlreadyExisted = 96,
-    IncorrectFees = 97,
+    WrongSeqno = 70,
+    WrongSignature = 71,
+    IncorrectFees = 72,
+    AccountAlreadyExisted = 73,
 }
 
 export const DnsMaxLengthBytes = 126;
