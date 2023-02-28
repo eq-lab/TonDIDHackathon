@@ -1,9 +1,10 @@
 import { deploy } from './deploy';
 import { readState } from './readState';
+import { setup } from './setup';
 import { Dictionary } from 'ton-core';
 import yargs, { Argv } from 'yargs';
 import { createDeployment, createTonClient } from './utils/common';
-import { mnemonicToWalletKey } from 'ton-crypto';
+import { mnemonicNew, mnemonicToWalletKey } from 'ton-crypto';
 
 async function main() {
     let argv = yargs
@@ -88,6 +89,63 @@ async function main() {
                 }
                 const client = await createTonClient({ network: 'testnet' });
                 await readState(client, contractInfo.address);
+            }
+        )
+        .command(
+            'setup',
+            'Sets up provider and fee params of KYC contract',
+            (yargs: Argv) =>
+                yargs
+                    .option('name', {
+                        describe: 'Contract name',
+                        alias: 'n',
+                        type: 'string',
+                    })
+                    .option('address', {
+                        describe: 'Base64-url address of KYC provider',
+                        alias: 'a',
+                        type: 'string',
+                    })
+                    .option('mnemonic', {
+                        describe: 'Mnemonic for signer acc',
+                        alias: 'm',
+                        default:
+                            'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle',
+                    })
+                    .option('provider', {
+                        describe: 'new KYC provider public key',
+                        alias: 'p',
+                        type: 'string',
+                    })
+                    .option('fee', {
+                        describe: 'new fee amount',
+                        alias: 'f',
+                        type: 'string',
+                    }),
+            async ({ name, address, mnemonic, provider, fee }) => {
+                if (name === undefined && address === undefined) {
+                    throw '--name or --address must be presented!';
+                }
+                if (name !== undefined && address !== undefined) {
+                    throw 'only one of --name or --address must be presented!';
+                }
+                if (provider === undefined && fee === undefined) {
+                    throw '--provider or --fee must be presented!';
+                }
+                const deployment = createDeployment();
+                let contractInfo;
+                if (name !== undefined) {
+                    contractInfo = deployment.getContractWithName(name);
+                }
+                if (address !== undefined) {
+                    contractInfo = deployment.getContractWithAddress(address);
+                }
+                if (contractInfo === undefined) {
+                    throw 'unknown contract';
+                }
+
+                const client = await createTonClient({ network: 'testnet' });
+                await setup(client, contractInfo.address, mnemonic, provider, fee);
             }
         );
     argv.parse();
