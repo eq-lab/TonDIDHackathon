@@ -83,12 +83,18 @@ describe('External::setAccState', () => {
     });
 
     it('wrong signature', async () => {
-        // const wrongMnemonic = await mnemonicNew(24);
-        // const wrongKycProvider = await mnemonicToWalletKey(wrongMnemonic);
-        // const tx = await kycContract.sendSetAccState(wrongKycProvider, newAcc, newAccState);
-        // expect(tx.transactions).toHaveTransaction({
-        //     to: kycContract.address,
-        //     exitCode: ExitCodes.WrongSignature,
-        // });
+        const wrongMnemonic = await mnemonicNew(24);
+        const wrongKycProvider = await mnemonicToWalletKey(wrongMnemonic);
+        let errorArgs: any[] | undefined;
+
+        try {
+            console.error = (...args) => { errorArgs = args };
+            await kycContract.sendSetAccState(wrongKycProvider, newAcc, newAccState);
+        } catch (err) {
+            expect(err).toEqual(Error('Error executing transaction'));
+        } finally {
+            expect(errorArgs).toBeDefined(); // to be sure transaction failed
+            expect(errorArgs![3].vmExitCode).toEqual(ExitCodes.WrongSignature);
+        }
     });
 });

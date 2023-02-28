@@ -6,8 +6,9 @@ import {
     createAccountsDictionary,
     createKycForDeploy,
     decodeDomainName,
+    ExitCodes,
 } from '../../src/utils/common';
-import { mnemonicToWalletKey } from 'ton-crypto';
+import { mnemonicNew, mnemonicToWalletKey } from 'ton-crypto';
 
 describe('External::setup', () => {
     let blockchain: Blockchain;
@@ -78,5 +79,22 @@ describe('External::setup', () => {
             accStates.push([decodeDomainName(acc), val]);
         }
         expect(accStates).toEqual(initialAccounts);
+    });
+
+    it('wrong signature', async () => {
+        const wrongMnemonic = await mnemonicNew(24);
+        const wrongKycProvider = await mnemonicToWalletKey(wrongMnemonic);
+        const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
+        let errorArgs: any[] | undefined;
+
+        try {
+            console.error = (...args) => { errorArgs = args };
+            await kycContract.sendSetup(wrongKycProvider, newProvider, newFee);
+        } catch (err) {
+            expect(err).toEqual(Error('Error executing transaction'));
+        } finally {
+            expect(errorArgs).toBeDefined(); // to be sure transaction failed
+            expect(errorArgs![3].vmExitCode).toEqual(ExitCodes.WrongSignature);
+        }
     });
 });
