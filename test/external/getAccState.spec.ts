@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { Cell, Dictionary } from 'ton-core';
-import { Blockchain, OpenedContract, TreasuryContract } from '@ton-community/sandbox';
+import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
 import { Kyc } from '../../src/kyc';
 import {
     AccountState,
@@ -13,8 +13,8 @@ import { mnemonicToWalletKey } from 'ton-crypto';
 
 describe('External::getAccState', () => {
     let blockchain: Blockchain;
-    let wallet1: OpenedContract<TreasuryContract>;
-    let kycContract: OpenedContract<Kyc>;
+    let wallet1: SandboxContract<TreasuryContract>;
+    let kycContract: SandboxContract<Kyc>;
 
     const initialSeqno = 17;
     const mnemonics 

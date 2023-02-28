@@ -14,6 +14,11 @@ export enum AccountState {
     Declined = 3,
 }
 
+export enum ExitCodes {
+    AccountAlreadyExisted = 96,
+    IncorrectFees = 97,
+}
+
 const deploymentPath = `data${path.sep}deployment.json`;
 
 export const AccountsDictionaryKey = Dictionary.Keys.BigUint(256);
