@@ -28,15 +28,16 @@
     var (stored_seqno, provider, fee, cell accounts_data) = load_data();
     throw_unless(32, stored_seqno == msg_seqno);
 
-    if (operation == 0) { ;; update params
-        slice msg_data = in_msg~load_bits(376);
-        slice signature = in_msg~load_bits(512);
-        in_msg.end_parse();
-        int data_hash = string_hash(msg_data);
-        throw_unless(33, check_signature(data_hash, signature, provider));
+    int remaining_bits = in_msg.slice_bits();
+    slice msg_data = in_msg~load_bits(remaining_bits - 512);
+    slice signature = in_msg~load_bits(512);
+    in_msg.end_parse();
+    int data_hash = string_hash(msg_data);
+    throw_unless(33, check_signature(data_hash, signature, provider));
 
-        accept_message();
-    
+    accept_message();
+
+    if (operation == 0) { ;; update params    
         int new_provider = msg_data~load_uint(256);
         int new_fee = msg_data~load_uint(120);
         msg_data.end_parse();
@@ -45,19 +46,9 @@
         return ();
 
     } elseif (operation == 1) { ;; kyc provider acc status set
-        slice msg_data = in_msg~load_bits(264);
-        slice signature = in_msg~load_bits(512);
-        in_msg.end_parse();
-        int data_hash = string_hash(msg_data);
-        throw_unless(33, check_signature(data_hash, signature, provider));
-
         int parsed_account = msg_data~load_uint(256);
-        (_, int in_dict) = accounts_data.udict_get?(256, parsed_account);
-        throw_unless(34, in_dict == 0); ;; unknown account.
-
-        accept_message();
-
         slice status = msg_data~load_bits(8);
+        msg_data.end_parse();
         accounts_data~udict_set(256, parsed_account, status);
     }
 
