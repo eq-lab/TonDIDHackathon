@@ -7,7 +7,7 @@ import {
     convertNumToGram,
 } from './utils/common';
 import { TupleItemInt } from 'ton-core/src/tuple/tuple';
-import { KeyPair, sha256, sign, signVerify } from 'ton-crypto';
+import { KeyPair, sha256, sign } from 'ton-crypto';
 
 enum ActionExternal {
     Setup = 0,
@@ -103,32 +103,34 @@ export class Kyc implements Contract {
     async sendSetup(provider: ContractProvider, oldKycProvider: KeyPair, newKycProvider: KeyPair, fee: number) {
         const currentSeqno = await this.getSeqno(provider);
         const feeCoins = convertNumToGram(fee);
-        const msgBody = beginCell().storeBuffer(newKycProvider.publicKey).storeCoins(feeCoins).endCell().toBoc();
-        const hash = await sha256(msgBody)
+        const msgBody = Buffer.alloc(47); 
+        msgBody.write(newKycProvider.publicKey.toString('hex'), 'hex');
+        msgBody.writeDoubleLE(feeCoins, 32);
+        const hash = await sha256(msgBody);
         const signature = sign(hash, oldKycProvider.secretKey);
         const messageBody = beginCell()
             .storeUint(ActionExternal.Setup, 4)
             .storeUint(currentSeqno, 32)
-            .storeBuffer(newKycProvider.publicKey)
-            .storeCoins(feeCoins)
+            .storeBuffer(msgBody)
             .storeBuffer(signature)
             .endCell();
 
         await provider.external(messageBody);
     }
 
-    async sendSetAccState(provider: ContractProvider, account: string, state: AccountState) {
-        let acc = account;
-        if (account.startsWith('0x')) {
-            acc = account.substring(2);
-        }
+    async sendSetAccState(provider: ContractProvider, kycProvider: KeyPair, account: KeyPair, state: AccountState) {
         const seqno = await this.getSeqno(provider);
-
+        const msgBody = Buffer.alloc(33); 
+        msgBody.write(account.publicKey.toString('hex'), 'hex');
+        msgBody.writeInt8(state, 32);
+        const hash = await sha256(msgBody);
+        const signature = sign(hash, kycProvider.secretKey);
         const messageBody = beginCell()
             .storeUint(ActionExternal.SetAccState, 4)
             .storeUint(seqno, 32)
-            .storeBuffer(Buffer.from(acc, 'hex'), 32)
-            .storeUint(state, 4)
+            .storeBuffer(account.publicKey)
+            .storeUint(state, 8)
+            .storeBuffer(signature)
             .endCell();
 
         await provider.external(messageBody);

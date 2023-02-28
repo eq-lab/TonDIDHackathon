@@ -28,7 +28,8 @@ describe('External::setAccState', () => {
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const newAcc = '0x0000000000000000000000000000000000000000000000000000000000000004';
+    const newAccMnemonics = 
+        'water nuclear buffalo again today lawn clock clinic isolate harbor armed pyramid aware snow state riot shock crunch hungry payment purity catalog present unable';
     const newAccState = AccountState.Approved;
 
     beforeEach(async () => {
@@ -46,26 +47,33 @@ describe('External::setAccState', () => {
     });
 
     it('seqno', async () => {
-        await kycContract.sendSetAccState(newAcc, newAccState);
+        const kycProvider = await mnemonicToWalletKey(mnemonics.split(' '));
+        const newAcc = await mnemonicToWalletKey(newAccMnemonics.split(' '));
+        await kycContract.sendSetAccState(kycProvider, newAcc, newAccState);
         const seqno = await kycContract.getSeqno();
         expect(Number(seqno)).toEqual(initialSeqno + 1);
     });
 
     it('provider', async () => {
-        const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        await kycContract.sendSetAccState(newAcc, newAccState);
+        const kycProvider = await mnemonicToWalletKey(mnemonics.split(' '));
+        const newAcc = await mnemonicToWalletKey(newAccMnemonics.split(' '));
+        await kycContract.sendSetAccState(kycProvider, newAcc, newAccState);
         const provider = await kycContract.getProvider();
-        expect(provider).toEqual(initialProvider.publicKey.toString());
+        expect(provider).toEqual(kycProvider.publicKey.toString('hex'));
     });
 
     it('fee', async () => {
-        await kycContract.sendSetAccState(newAcc, newAccState);
+        const kycProvider = await mnemonicToWalletKey(mnemonics.split(' '));
+        const newAcc = await mnemonicToWalletKey(newAccMnemonics.split(' '));
+        await kycContract.sendSetAccState(kycProvider, newAcc, newAccState);
         const fee = await kycContract.getFee();
         expect(convertGramToNum(fee)).toEqual(initialFee);
     });
 
     it('accounts', async () => {
-        await kycContract.sendSetAccState(newAcc, newAccState);
+        const kycProvider = await mnemonicToWalletKey(mnemonics.split(' '));
+        const newAcc = await mnemonicToWalletKey(newAccMnemonics.split(' '));
+        await kycContract.sendSetAccState(kycProvider, newAcc, newAccState);
 
         const accounts = await kycContract.getAccountsData();
 
@@ -76,7 +84,7 @@ describe('External::setAccState', () => {
         const expected = initialAccounts.map(([acc, val]) => {
             return [Number.parseInt(acc.slice(2), 16).toString(), val];
         });
-        expected.push([Number.parseInt(newAcc, 16).toString(), newAccState]);
+        expected.push([Number.parseInt(newAcc.publicKey.toString('hex'), 16).toString(), newAccState]);
         expect(accStates).toEqual(expected);
     });
 });
