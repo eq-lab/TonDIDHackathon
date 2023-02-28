@@ -145,13 +145,8 @@ export class Kyc implements Contract {
         await provider.external(messageBody);
     }
 
-    async sendExternal(provider: ContractProvider, action: number): Promise<void> {
-        const seqno = await this.getSeqno(provider);
-        const messageBody = beginCell().storeUint(action, 4).storeUint(seqno, 32).storeUint(0, 256).endCell();
-
-        console.log(`EXTERNAL: ${messageBody.toBoc().toString('hex')}`);
+    async sendExternal(provider: ContractProvider, messageBody: Cell): Promise<void> {
         await provider.external(messageBody);
-        console.log(`External call executed`);
     }
 
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}

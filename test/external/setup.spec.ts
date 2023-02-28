@@ -1,14 +1,17 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
-import { Kyc } from '../../src/kyc';
+import { ActionExternal, Kyc } from '../../src/kyc';
 import {
     AccountState,
     convertGramToNum,
+    convertNumToGram,
     createAccountsDictionary,
     createKycForDeploy,
     decodeDomainName,
+    encodeDomainName,
     ExitCodes,
 } from '../../src/utils/common';
-import { mnemonicNew, mnemonicToWalletKey } from 'ton-crypto';
+import { mnemonicNew, mnemonicToWalletKey, sha256, sign } from 'ton-crypto';
+import { beginCell } from 'ton-core';
 
 describe('External::setup', () => {
     let blockchain: Blockchain;
@@ -88,13 +91,47 @@ describe('External::setup', () => {
         let errorArgs: any[] | undefined;
 
         try {
-            console.error = (...args) => { errorArgs = args };
+            console.error = (...args) => {
+                errorArgs = args;
+            };
             await kycContract.sendSetup(wrongKycProvider, newProvider, newFee);
         } catch (err) {
             expect(err).toEqual(Error('Error executing transaction'));
         } finally {
             expect(errorArgs).toBeDefined(); // to be sure transaction failed
             expect(errorArgs![3].vmExitCode).toEqual(ExitCodes.WrongSignature);
+        }
+    });
+
+    it('wrong seqno', async () => {
+        const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
+        const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
+        const wrongSeqno = (await kycContract.getSeqno()) + 1n;
+        const feeCoins = convertNumToGram(newFee);
+        const args = Buffer.alloc(47);
+        args.write(newProvider.publicKey.toString('hex'), 'hex');
+        args.writeBigUInt64BE(feeCoins, 39);
+        const hash = await sha256(args);
+        const signature = sign(hash, oldProvider.secretKey);
+
+        const messageBody = beginCell()
+            .storeUint(ActionExternal.Setup, 4)
+            .storeUint(wrongSeqno, 32)
+            .storeRef(beginCell().storeBuffer(args).endCell())
+            .storeBuffer(signature)
+            .endCell();
+
+        let errorArgs: any[] | undefined;
+        try {
+            console.error = (...args) => {
+                errorArgs = args;
+            };
+            await kycContract.sendExternal(messageBody);
+        } catch (err) {
+            expect(err).toEqual(Error('Error executing transaction'));
+        } finally {
+            expect(errorArgs).toBeDefined(); // to be sure transaction failed
+            expect(errorArgs![3].vmExitCode).toEqual(ExitCodes.WrongSeqno);
         }
     });
 });
