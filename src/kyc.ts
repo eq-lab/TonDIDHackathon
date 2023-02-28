@@ -100,10 +100,15 @@ export class Kyc implements Contract {
         });
     }
 
-    async sendSetup(provider: ContractProvider, oldKycProvider: KeyPair, newKycProvider: KeyPair, fee: number) : Promise<void> {
+    async sendSetup(
+        provider: ContractProvider,
+        oldKycProvider: KeyPair,
+        newKycProvider: KeyPair,
+        fee: number
+    ): Promise<void> {
         const currentSeqno = await this.getSeqno(provider);
         const feeCoins = convertNumToGram(fee);
-        const msgBody = Buffer.alloc(47); 
+        const msgBody = Buffer.alloc(47);
         msgBody.write(newKycProvider.publicKey.toString('hex'), 'hex');
         msgBody.writeBigUInt64BE(feeCoins, 39);
         const hash = await sha256(msgBody);
@@ -118,9 +123,14 @@ export class Kyc implements Contract {
         await provider.external(messageBody);
     }
 
-    async sendSetAccState(provider: ContractProvider, kycProvider: KeyPair, account: KeyPair, state: AccountState) : Promise<void> {
+    async sendSetAccState(
+        provider: ContractProvider,
+        kycProvider: KeyPair,
+        account: KeyPair,
+        state: AccountState
+    ): Promise<void> {
         const seqno = await this.getSeqno(provider);
-        const msgBody = Buffer.alloc(33); 
+        const msgBody = Buffer.alloc(33);
         msgBody.write(account.publicKey.toString('hex'), 'hex');
         msgBody.writeInt8(state, 32);
         const hash = await sha256(msgBody);

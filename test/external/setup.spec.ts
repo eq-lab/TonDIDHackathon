@@ -17,8 +17,8 @@ describe('External::setup', () => {
     let kycContract: SandboxContract<Kyc>;
 
     const initialSeqno = 17;
-    const mnemonics 
-        = 'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle';
+    const mnemonics =
+        'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle';
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
         ['0x0000000000000000000000000000000000000000000000000000000000000001', AccountState.Requested],
@@ -27,7 +27,7 @@ describe('External::setup', () => {
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const newProviderMnemonics = 
+    const newProviderMnemonics =
         'water nuclear buffalo again today lawn clock clinic isolate harbor armed pyramid aware snow state riot shock crunch hungry payment purity catalog present unable';
     const newFee = 1.1;
 

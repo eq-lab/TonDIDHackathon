@@ -15,6 +15,7 @@ export enum AccountState {
 }
 
 export enum ExitCodes {
+    WrongSignature = 33,
     AccountAlreadyExisted = 96,
     IncorrectFees = 97,
 }

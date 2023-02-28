@@ -1,15 +1,14 @@
-import * as fs from 'fs';
-import { Cell, Dictionary } from 'ton-core';
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
+import '@ton-community/test-utils';
 import { Kyc } from '../../src/kyc';
 import {
     AccountState,
     convertGramToNum,
-    convertNumToGram,
     createAccountsDictionary,
     createKycForDeploy,
+    ExitCodes,
 } from '../../src/utils/common';
-import { mnemonicToWalletKey } from 'ton-crypto';
+import { mnemonicNew, mnemonicToWalletKey } from 'ton-crypto';
 
 describe('External::setAccState', () => {
     let blockchain: Blockchain;
@@ -17,8 +16,8 @@ describe('External::setAccState', () => {
     let kycContract: SandboxContract<Kyc>;
 
     const initialSeqno = 17;
-    const mnemonics 
-        = 'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle';
+    const mnemonics =
+        'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle';
 
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
@@ -28,13 +27,13 @@ describe('External::setAccState', () => {
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const newAccMnemonics = 
+    const newAccMnemonics =
         'water nuclear buffalo again today lawn clock clinic isolate harbor armed pyramid aware snow state riot shock crunch hungry payment purity catalog present unable';
     const newAccState = AccountState.Approved;
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
-        const initialProvider = await mnemonicToWalletKey(mnemonics.split(" "));
+        const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const kyc = createKycForDeploy(initialSeqno, initialProvider.publicKey, initialFee, initialDict);
 
         // initialize the blockchain sandbox
@@ -84,7 +83,18 @@ describe('External::setAccState', () => {
         const expected = initialAccounts.map(([acc, val]) => {
             return [Number.parseInt(acc.slice(2), 16).toString(), val];
         });
-        expected.push([BigInt("0x" + newAcc.publicKey.toString('hex')).toString(), newAccState]);
+        expected.push([BigInt('0x' + newAcc.publicKey.toString('hex')).toString(), newAccState]);
         expect(accStates).toEqual(expected);
+    });
+
+    it('wrong signature', async () => {
+        const wrongMnemonic = await mnemonicNew(24);
+        const wrongKycProvider = await mnemonicToWalletKey(wrongMnemonic);
+        const newAcc = await mnemonicToWalletKey(newAccMnemonics.split(' '));
+        const tx = await kycContract.sendSetAccState(wrongKycProvider, newAcc, newAccState);
+        expect(tx.transactions).toHaveTransaction({
+            to: kycContract.address,
+            exitCode: ExitCodes.WrongSignature,
+        });
     });
 });

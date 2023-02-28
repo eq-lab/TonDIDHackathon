@@ -16,8 +16,8 @@ describe('Deploy', () => {
     let kycContract: SandboxContract<Kyc>;
 
     const initialSeqno = 17;
-    const mnemonics 
-        = 'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle';
+    const mnemonics =
+        'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle';
     const initialFee = 0.5;
     const initialAccounts: [string, AccountState][] = [
         ['0', AccountState.Requested],

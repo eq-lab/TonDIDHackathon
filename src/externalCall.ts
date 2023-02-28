@@ -12,13 +12,13 @@ export async function externalCall(client: TonClient, contractAddress: string) {
     const contractSeqno = await kyc.getSeqno();
     // send the external increment transaction
     await kyc.sendExternal(10);
-    
+
     // wait until confirmed
     let currentSeqno = contractSeqno;
     while (currentSeqno == contractSeqno) {
-        console.log("waiting for transaction to confirm...");
+        console.log('waiting for transaction to confirm...');
         await sleep(1500);
         currentSeqno = await kyc.getSeqno();
     }
-    console.log("transaction confirmed!");
+    console.log('transaction confirmed!');
 }

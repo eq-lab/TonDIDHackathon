@@ -49,7 +49,7 @@ async function main() {
                 // todo: fill dict
                 // console.log(name, seqno, provider, fee, accounts, mnemonic)
                 const client = await createTonClient({ network: 'testnet' });
-                const providerWallet = await mnemonicToWalletKey(mnemonic.split(" "));
+                const providerWallet = await mnemonicToWalletKey(mnemonic.split(' '));
                 await deploy(client, name, mnemonic, seqno, providerWallet.publicKey, fee, Dictionary.empty());
             }
         )
