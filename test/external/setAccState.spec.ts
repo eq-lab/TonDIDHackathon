@@ -44,7 +44,7 @@ describe('External::setAccState', () => {
 
         // deploy kyc contract
         kycContract = blockchain.openContract(kyc);
-        await kycContract.sendDeploy(wallet1.getSender());
+        await kycContract.sendDeploy(wallet1.getSender(), 0.01);
     });
 
     it('seqno increased', async () => {
