@@ -7,7 +7,7 @@ export async function setup(
     contractAddress: string,
     mnemonic: string,
     newProviderPublicKey: string | undefined,
-    newFee: string | undefined
+    newFee: number | undefined
 ) {
     console.log(`\nSetting up`);
     const kycContract = await createKycContract(contractAddress);
@@ -16,6 +16,6 @@ export async function setup(
 
     const newProvider = newProviderPublicKey !== undefined ? newProviderPublicKey! : provider.publicKey.toString('hex');
 
-    const fee = newFee !== undefined ? +newFee! : convertGramToNum(await kyc.getFee());
+    const fee = newFee !== undefined ? newFee! : convertGramToNum(await kyc.getFee());
     await kyc.sendSetup(provider, newProvider, fee);
 }

@@ -9,6 +9,7 @@ export async function deploy(
     initialSeqno: number,
     kycProvider: Buffer,
     fee: number,
+    initialDeposit: number,
     accounts: AccountsDictionary
 ) {
     console.log(`\nDeploy`);
@@ -32,7 +33,7 @@ export async function deploy(
 
     // send the deploy transaction
     const kycContract = client.open(kyc);
-    await kycContract.sendDeploy(sender);
+    await kycContract.sendDeploy(sender, initialDeposit);
 
     // wait until confirmed
     let currentSeqno = seqno;
