@@ -43,11 +43,35 @@ yarn build && yarn start deploy \
   --accounts 'user_1.ton,user_2.ton,user_3.ton'
 ``` 
 
-#### Read state
+#### Read KYC contract state
 ```bash
 yarn install
 yarn build && yarn start read-state \
   --name 'test_contract'
+``` 
+
+#### Read account state
+```bash
+yarn install
+yarn build && yarn start read-acc-state \
+  --name 'test_contract' \
+  --account 'my_domain_name.ton'
+``` 
+
+#### Read all requested accounts
+```bash
+yarn install
+yarn build && yarn start read-requested \
+  --name 'test_contract'
+``` 
+
+#### Read all requested accounts
+```bash
+yarn install
+yarn build && yarn start send-request \
+  --name 'test_contract' \
+  --mnemonic "$(cat data/keys/EQDnO8IoL0E3By60vnMyunzOILU_nSAJo1DmBhEtfniUAj8C)" \
+  --account 'my_domain_name.ton'
 ``` 
 
 #### toncli deploy

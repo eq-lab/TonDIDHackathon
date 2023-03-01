@@ -11,6 +11,7 @@ import {
     decodeDomainName,
 } from './common';
 import { request } from './methods/request';
+import { readAccState } from './methods/readAccState';
 
 async function main() {
     let argv = yargs
@@ -104,6 +105,49 @@ async function main() {
                 }
                 const client = await createTonClient({ network: 'testnet' });
                 await readState(client, contractInfo.address);
+            }
+        )
+        .command(
+            'read-acc-state',
+            'Read state of account.',
+            (yargs: Argv) =>
+                yargs
+                    .option('name', {
+                        describe: 'Contract name',
+                        alias: 'n',
+                        type: 'string',
+                    })
+                    .option('address', {
+                        describe: 'Base64-url address of KYC provider',
+                        alias: 'a',
+                        type: 'string',
+                    })
+                    .option('account', {
+                        describe: 'TON Domain name',
+                        alias: 'd',
+                        type: 'string',
+                        required: true,
+                    }),
+            async ({ name, address, account }) => {
+                if (name === undefined && address === undefined) {
+                    throw '--name or --address must be presented!';
+                }
+                if (name !== undefined && address !== undefined) {
+                    throw 'only one of --name or --address must be presented!';
+                }
+                const deployment = createDeployment();
+                let contractInfo;
+                if (name !== undefined) {
+                    contractInfo = deployment.getContractWithName(name);
+                }
+                if (address !== undefined) {
+                    contractInfo = deployment.getContractWithAddress(address);
+                }
+                if (contractInfo === undefined) {
+                    throw 'unknown contract';
+                }
+                const client = await createTonClient({ network: 'testnet' });
+                await readAccState(client, contractInfo.address, account);
             }
         )
         .command(
