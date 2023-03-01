@@ -83,20 +83,20 @@ export class Kyc implements Contract {
     }
 
     async getAccountsData(provider: ContractProvider): Promise<AccountsDictionary> {
-        let tupleReader: TupleReader;
-        try {
-            const { stack } = await provider.get('get_accounts_data', []);
-            tupleReader = stack;
-        } catch (e) {
-            if ((e as Error).message === 'Unsupported stack item type: list') {
-                return Dictionary.empty();
-            }
-            throw e;
+        if (await this.getAccountsDataIsEmpty(provider)) {
+            return Dictionary.empty();
         }
-        const cell = tupleReader.readCell();
+        const { stack } = await provider.get('get_accounts_data', []);
+        const cell = stack.readCell();
         return Dictionary.loadDirect(AccountsDictionaryKey, AccountsDictionaryValue, cell);
     }
 
+    async getAccountsDataIsEmpty(provider: ContractProvider): Promise<boolean> {
+        const { stack } = await provider.get('accounts_data_is_empty', []);
+        const isEmpty = stack.readNumber();
+        console.log(`IS EMPTY: `, isEmpty);
+        return isEmpty !== 0;
+    }
     async sendRequestKyc(provider: ContractProvider, account: string, via: Sender): Promise<void> {
         const acc = encodeDomainName(account);
         const message = beginCell()

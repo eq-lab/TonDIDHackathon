@@ -96,6 +96,11 @@ int get_fee() method_id {
     return fee;
 }
 
+int accounts_data_is_empty() method_id {
+    var (_, _, _, accounts_data) = load_data();
+    return dict_empty?(accounts_data);
+}
+
 cell get_accounts_data() method_id {
     var (_, _, _, accounts_data) = load_data();
     return accounts_data;
