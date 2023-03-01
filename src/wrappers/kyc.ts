@@ -49,9 +49,9 @@ export class Kyc implements Contract {
         return new Kyc(address, { code, data });
     }
 
-    async sendDeploy(provider: ContractProvider, via: Sender): Promise<void> {
+    async sendDeploy(provider: ContractProvider, via: Sender, initialDeposit: number): Promise<void> {
         await provider.internal(via, {
-            value: '0.01', // send 0.01 TON to contract for rent
+            value: initialDeposit.toString(), // send TON to contract for rent
             bounce: false,
         });
     }

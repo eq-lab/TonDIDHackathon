@@ -1,6 +1,7 @@
 import { deploy } from './methods/deploy';
 import { readState } from './methods/readState';
 import { setup } from './methods/setup';
+import { setStatus } from './methods/setStatus';
 import yargs, { Argv } from 'yargs';
 import {
     AccountState,
@@ -35,6 +36,11 @@ async function main() {
                         alias: 'f',
                         default: 0.01,
                     })
+                    .option('deposit', {
+                        describe: 'Initial deposit to contract in TON coins',
+                        alias: 'd',
+                        default: 0.5,
+                    })
                     .option('accounts', {
                         describe: 'Already KYC-passed accounts. Format: address_0,address_1,address_N',
                         alias: 'a',
@@ -52,7 +58,7 @@ async function main() {
                         type: 'string',
                         required: true,
                     }),
-            async ({ name, seqno, provider, fee, accounts, mnemonic }) => {
+            async ({ name, seqno, provider, fee, deposit, accounts, mnemonic }) => {
                 let initDict = createAccountsDictionary();
                 if (accounts !== undefined) {
                     const accs: [string, AccountState][] = accounts.split(',').map((x) => [x, AccountState.Approved]);
@@ -67,7 +73,7 @@ async function main() {
                 if (providerBuffer.length != 32) {
                     throw `incorrect provider public key length! Expected: 32, actual: ${providerBuffer.length}`;
                 }
-                await deploy(client, name, mnemonic, seqno, providerBuffer, fee, initDict);
+                await deploy(client, name, mnemonic, seqno, providerBuffer, fee, deposit, initDict);
             }
         )
         .command(
@@ -179,7 +185,7 @@ async function main() {
                     .option('fee', {
                         describe: 'new fee amount',
                         alias: 'f',
-                        type: 'string',
+                        type: 'number',
                     }),
             async ({ name, address, mnemonic, provider, fee }) => {
                 if (name === undefined && address === undefined) {
@@ -205,6 +211,66 @@ async function main() {
 
                 const client = await createTonClient({ network: 'testnet' });
                 await setup(client, contractInfo.address, mnemonic, provider, fee);
+            }
+        )
+        .command(
+            'set-status',
+            'Sets up provider and fee params of KYC contract',
+            (yargs: Argv) =>
+                yargs
+                    .option('name', {
+                        describe: 'Contract name',
+                        alias: 'n',
+                        type: 'string',
+                    })
+                    .option('address', {
+                        describe: 'Base64-url address of KYC provider',
+                        alias: 'a',
+                        type: 'string',
+                    })
+                    .option('mnemonic', {
+                        describe: 'Mnemonic for signer acc',
+                        alias: 'm',
+                        default:
+                            'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle',
+                    })
+                    .option('domain', {
+                        describe: 'domain to set new status',
+                        alias: 'd',
+                        type: 'string',
+                    })
+                    .option('status', {
+                        describe: 'new status',
+                        alias: 's',
+                        type: 'number',
+                    }),
+            async ({ name, address, mnemonic, domain, status }) => {
+                if (name === undefined && address === undefined) {
+                    throw '--name or --address must be presented!';
+                }
+                if (name !== undefined && address !== undefined) {
+                    throw 'only one of --name or --address must be presented!';
+                }
+                if (domain === undefined) {
+                    throw '--domain must be presented!';
+                }
+                if (status === undefined) {
+                    throw '--status must be presented!';
+                }
+                const deployment = createDeployment();
+                let contractInfo;
+                if (name !== undefined) {
+                    contractInfo = deployment.getContractWithName(name);
+                }
+                if (address !== undefined) {
+                    contractInfo = deployment.getContractWithAddress(address);
+                }
+                if (contractInfo === undefined) {
+                    throw 'unknown contract';
+                }
+
+                const client = await createTonClient({ network: 'testnet' });
+                await setStatus(client, contractInfo.address, mnemonic, domain, status);
             }
         )
         .command(
