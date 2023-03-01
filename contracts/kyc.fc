@@ -6,9 +6,9 @@
     int seqno = data~load_uint(32);
     int provider = data~load_uint(256);
     int fee = data~load_grams();
-    cell dictionary = new_dict();
-    if (~ slice_empty?(data)) {
-        dictionary = data~load_dict();
+    cell dictionary = data~load_dict();
+    if (dict_empty?(dictionary)) {
+        dictionary = new_dict();
     }
     data.end_parse();
     return (seqno, provider, fee, dictionary);
@@ -47,9 +47,13 @@
 
     } elseif (operation == 1) { ;; kyc provider acc status set
         slice parsed_account = args~load_bits(1008);
-        slice status = args~load_bits(8);
+        int status = args~load_uint(8);
         args.end_parse();
-        accounts_data~dict_set(1008, parsed_account, status);
+        accounts_data~dict_set(
+            1008,
+            parsed_account,
+            begin_cell().store_uint(status, 2).end_cell().begin_parse()
+        );
     }
 
     save_data(stored_seqno + 1, provider, fee, accounts_data);
@@ -64,7 +68,7 @@
         slice account = in_msg_body~load_bits(1008);
         (_, int existed) = accounts_data.dict_get?(1008, account);
         throw_if(73, existed);
-        slice val = begin_cell().store_uint(1, 8).end_cell().begin_parse();
+        slice val = begin_cell().store_uint(1, 2).end_cell().begin_parse();
         accounts_data~dict_set(1008, account, val);
         save_data(stored_seqno, provider, fee, accounts_data);
         account~dump();
@@ -76,7 +80,7 @@ int get_account_state(slice account) method_id {
 	var (_, _, _, accounts_data) = load_data();
 	(slice status, int success) = accounts_data.dict_get?(1008, account);
     if (success) {
-        return status~load_uint(8);
+        return status~load_uint(2);
     }
 	return 0;
 }

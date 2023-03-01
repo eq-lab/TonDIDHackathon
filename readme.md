@@ -65,7 +65,7 @@ yarn build && yarn start read-requested \
   --name 'test_contract'
 ``` 
 
-#### Read all requested accounts
+#### Request KYC for TON Domain name
 ```bash
 yarn install
 yarn build && yarn start send-request \

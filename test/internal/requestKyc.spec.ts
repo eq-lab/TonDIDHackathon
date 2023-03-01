@@ -44,7 +44,7 @@ describe('Internal::requestKyc', () => {
         userWallet = await blockchain.treasury('userwallet1');
         // deploy kyc contract
         kycContract = blockchain.openContract(kyc);
-        await kycContract.sendDeploy(wallet1.getSender(), 0.01);
+        await kycContract.sendDeploy(wallet1.getSender(), 1);
     });
 
     it('unknown account', async () => {

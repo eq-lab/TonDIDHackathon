@@ -26,7 +26,7 @@ export const DnsMaxLengthBytes = 126;
 const deploymentPath = `data${path.sep}deployment.json`;
 
 export const AccountsDictionaryKey = Dictionary.Keys.Buffer(DnsMaxLengthBytes);
-export const AccountsDictionaryValue = Dictionary.Values.Uint(8);
+export const AccountsDictionaryValue = Dictionary.Values.Uint(2);
 export type AccountsDictionary = Dictionary<Buffer, number>;
 
 export interface ContractInfo {

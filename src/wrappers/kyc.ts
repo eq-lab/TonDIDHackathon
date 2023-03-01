@@ -84,7 +84,7 @@ export class Kyc implements Contract {
 
     async getAccountsData(provider: ContractProvider): Promise<AccountsDictionary> {
         if (await this.getAccountsDataIsEmpty(provider)) {
-            return Dictionary.empty();
+            return Dictionary.empty(AccountsDictionaryKey, AccountsDictionaryValue);
         }
         const { stack } = await provider.get('get_accounts_data', []);
         const cell = stack.readCell();
@@ -94,7 +94,6 @@ export class Kyc implements Contract {
     async getAccountsDataIsEmpty(provider: ContractProvider): Promise<boolean> {
         const { stack } = await provider.get('accounts_data_is_empty', []);
         const isEmpty = stack.readNumber();
-        console.log(`IS EMPTY: `, isEmpty);
         return isEmpty !== 0;
     }
     async sendRequestKyc(provider: ContractProvider, account: string, via: Sender): Promise<void> {
