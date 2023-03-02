@@ -1,15 +1,22 @@
 ;; Missed wrapper of DICTGET opcode for dictionaries with non-int keys
 (slice, int) dict_get?(cell dict, int key_len, slice index) asm(index dict key_len) "DICTGET NULLSWAPIFNOT";
 
+const int WRONG_SEQNO = 70;
+const int BAD_SIGNATURE = 71;
+const int WRONG_MSG_VALUE = 72;
+const int ACC_EXISTS = 73;
+
+slice requested_status() inline {
+    ;; 0x4 == 0b0100 -> 0b01 == 1
+    return "4"s.first_bits(2);
+}
+
 (int, int, int, cell) load_data() {
     var data = get_data().begin_parse();
     int seqno = data~load_uint(32);
     int provider = data~load_uint(256);
     int fee = data~load_grams();
     cell dictionary = data~load_dict();
-    if (dict_empty?(dictionary)) {
-        dictionary = new_dict();
-    }
     data.end_parse();
     return (seqno, provider, fee, dictionary);
 }
@@ -29,14 +36,14 @@
     int operation = in_msg~load_uint(4);
     int msg_seqno = in_msg~load_uint(32);
     var (stored_seqno, provider, fee, cell accounts_data) = load_data();
-    throw_unless(70, stored_seqno == msg_seqno);
+    throw_unless(WRONG_SEQNO, stored_seqno == msg_seqno);
 
     slice signature = in_msg~load_bits(512);
     slice args = in_msg~load_ref().begin_parse();
     in_msg.end_parse();
 
     int data_hash = string_hash(args);
-    throw_unless(71, check_signature(data_hash, signature, provider));
+    throw_unless(BAD_SIGNATURE, check_signature(data_hash, signature, provider));
 
     accept_message();
 
@@ -45,7 +52,9 @@
         fee = args~load_uint(120);
         args.end_parse();
 
-    } elseif (operation == 1) { ;; kyc provider acc status set
+    }
+
+    if (operation == 1) { ;; kyc provider acc status set
         slice parsed_account = args~load_bits(1008);
         int status = args~load_uint(8);
         args.end_parse();
@@ -64,12 +73,11 @@
     var (stored_seqno, provider, fee, cell accounts_data) = load_data();
     int operation = in_msg_body~load_uint(4);
     if (operation == 0) { ;; request KYC check for account
-        throw_if(72, msg_value != fee);
+        throw_if(WRONG_MSG_VALUE, msg_value != fee);
         slice account = in_msg_body~load_bits(1008);
         (_, int existed) = accounts_data.dict_get?(1008, account);
-        throw_if(73, existed);
-        slice val = begin_cell().store_uint(1, 2).end_cell().begin_parse();
-        accounts_data~dict_set(1008, account, val);
+        throw_if(ACC_EXISTS, existed);
+        accounts_data~dict_set(1008, account, requested_status());
         save_data(stored_seqno, provider, fee, accounts_data);
         account~dump();
     }
