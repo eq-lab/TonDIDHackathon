@@ -8,6 +8,7 @@ import {
     createKycForDeploy,
     decodeDomainName,
     ExitCodes,
+    removeTonTopDomain,
 } from '../../src/common';
 import { mnemonicNew, mnemonicToWalletKey, sha256, sign } from 'ton-crypto';
 import { beginCell } from 'ton-core';
@@ -27,6 +28,9 @@ describe('External::setup', () => {
         ['user_3.ton', AccountState.Declined],
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
+
+    const initialStorageDict: [string, AccountState][] 
+        = initialAccounts.map(([domain, status]) => [removeTonTopDomain(domain), status]);
 
     const newProviderMnemonics =
         'water nuclear buffalo again today lawn clock clinic isolate harbor armed pyramid aware snow state riot shock crunch hungry payment purity catalog present unable';
@@ -80,7 +84,7 @@ describe('External::setup', () => {
         for (const [acc, val] of accounts) {
             accStates.push([decodeDomainName(acc), val]);
         }
-        expect(accStates).toEqual(initialAccounts);
+        expect(accStates).toEqual(initialStorageDict);
     });
 
     it('wrong signature', async () => {

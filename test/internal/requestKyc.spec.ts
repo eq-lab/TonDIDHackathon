@@ -9,6 +9,7 @@ import {
     decodeDomainName,
     encodeDomainName,
     ExitCodes,
+    removeTonTopDomain,
 } from '../../src/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 import * as util from 'util';
@@ -71,7 +72,7 @@ describe('Internal::requestKyc', () => {
         const buff = Buffer.from(logs[0].slice(startIdx, startIdx + 253), 'hex');
         const domainName = decodeDomainName(buff);
 
-        expect(domainName).toEqual(newAccount);
+        expect(domainName).toEqual(removeTonTopDomain(newAccount));
         expect(req.transactions).toHaveTransaction({
             from: userWallet.address,
             to: kycContract.address,
@@ -88,7 +89,7 @@ describe('Internal::requestKyc', () => {
         const [userTx, updateStorageTx] = req.transactions;
 
         if (updateStorageTx.inMessage?.info.type !== 'internal') {
-            throw 'parse error';
+            throw new Error('parse error');
         }
         const expectedFees =
             userBalanceBefore - requiredFee - userTx.totalFees.coins - updateStorageTx.inMessage.info.forwardFee;

@@ -8,7 +8,7 @@ export async function request(client: TonClient, contractInfo: ContractInfo, mne
     const deployment = createDeployment();
 
     if (deployment.getContractWithName(contractInfo.name) === undefined) {
-        throw 'unknown contract!';
+        throw new Error('unknown contract!');
     }
     const mnem = mnemonic.split(' ');
     const key = await mnemonicToWalletKey(mnem);

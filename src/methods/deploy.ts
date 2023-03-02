@@ -16,12 +16,12 @@ export async function deploy(
     const deployment = createDeployment();
     const kyc = createKycForDeploy(initialSeqno, kycProvider, fee, accounts);
     if (deployment.getContractWithName(contractName) !== undefined) {
-        throw 'contract with this name already deployed!';
+        throw new Error('contract with this name already deployed!');
     }
     // exit if contract is already deployed
     console.log('contract address:', kyc.address.toString());
     if (await client.isContractDeployed(kyc.address)) {
-        throw 'Contract already deployed!';
+        throw new Error('Contract already deployed!');
     }
 
     const key = await mnemonicToWalletKey(mnemonic.split(' '));

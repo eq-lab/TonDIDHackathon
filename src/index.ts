@@ -5,6 +5,7 @@ import { setStatus } from './methods/setStatus';
 import yargs, { Argv } from 'yargs';
 import {
     AccountState,
+    convertPublickKeyStringToBuffer,
     createAccountsDictionary,
     createDeployment,
     createKycContract,
@@ -65,14 +66,8 @@ async function main() {
                     initDict = createAccountsDictionary(accs);
                 }
                 const client = await createTonClient({ network: 'testnet' });
-                let providerPublicKey = provider;
-                if (provider.startsWith('0x')) {
-                    providerPublicKey = provider.slice(2);
-                }
-                const providerBuffer = Buffer.from(providerPublicKey, 'hex');
-                if (providerBuffer.length != 32) {
-                    throw `incorrect provider public key length! Expected: 32, actual: ${providerBuffer.length}`;
-                }
+                let providerBuffer = convertPublickKeyStringToBuffer(provider);
+                
                 await deploy(client, name, mnemonic, seqno, providerBuffer, fee, deposit, initDict);
             }
         )
@@ -93,10 +88,10 @@ async function main() {
                     }),
             async ({ name, address }) => {
                 if (name === undefined && address === undefined) {
-                    throw '--name or --address must be presented!';
+                    throw new Error('--name or --address must be presented!');
                 }
                 if (name !== undefined && address !== undefined) {
-                    throw 'only one of --name or --address must be presented!';
+                    throw new Error('only one of --name or --address must be presented!');
                 }
                 const deployment = createDeployment();
                 let contractInfo;
@@ -107,7 +102,7 @@ async function main() {
                     contractInfo = deployment.getContractWithAddress(address);
                 }
                 if (contractInfo === undefined) {
-                    throw 'unknown contract';
+                    throw new Error('unknown contract');
                 }
                 const client = await createTonClient({ network: 'testnet' });
                 await readState(client, contractInfo.address);
@@ -136,10 +131,10 @@ async function main() {
                     }),
             async ({ name, address, account }) => {
                 if (name === undefined && address === undefined) {
-                    throw '--name or --address must be presented!';
+                    throw new Error('--name or --address must be presented!');
                 }
                 if (name !== undefined && address !== undefined) {
-                    throw 'only one of --name or --address must be presented!';
+                    throw new Error('only one of --name or --address must be presented!');
                 }
                 const deployment = createDeployment();
                 let contractInfo;
@@ -150,7 +145,7 @@ async function main() {
                     contractInfo = deployment.getContractWithAddress(address);
                 }
                 if (contractInfo === undefined) {
-                    throw 'unknown contract';
+                    throw new Error('unknown contract');
                 }
                 const client = await createTonClient({ network: 'testnet' });
                 await readAccState(client, contractInfo.address, account);
@@ -189,13 +184,13 @@ async function main() {
                     }),
             async ({ name, address, mnemonic, provider, fee }) => {
                 if (name === undefined && address === undefined) {
-                    throw '--name or --address must be presented!';
+                    throw new Error('--name or --address must be presented!');
                 }
                 if (name !== undefined && address !== undefined) {
-                    throw 'only one of --name or --address must be presented!';
+                    throw new Error('only one of --name or --address must be presented!');
                 }
                 if (provider === undefined && fee === undefined) {
-                    throw '--provider or --fee must be presented!';
+                    throw new Error('--provider or --fee must be presented!');
                 }
                 const deployment = createDeployment();
                 let contractInfo;
@@ -206,7 +201,7 @@ async function main() {
                     contractInfo = deployment.getContractWithAddress(address);
                 }
                 if (contractInfo === undefined) {
-                    throw 'unknown contract';
+                    throw new Error('unknown contract');
                 }
 
                 const client = await createTonClient({ network: 'testnet' });
@@ -246,16 +241,16 @@ async function main() {
                     }),
             async ({ name, address, mnemonic, domain, status }) => {
                 if (name === undefined && address === undefined) {
-                    throw '--name or --address must be presented!';
+                    throw new Error('--name or --address must be presented!');
                 }
                 if (name !== undefined && address !== undefined) {
-                    throw 'only one of --name or --address must be presented!';
+                    throw new Error('only one of --name or --address must be presented!');
                 }
                 if (domain === undefined) {
-                    throw '--domain must be presented!';
+                    throw new Error('--domain must be presented!');
                 }
                 if (status === undefined) {
-                    throw '--status must be presented!';
+                    throw new Error('--status must be presented!');
                 }
                 const deployment = createDeployment();
                 let contractInfo;
@@ -266,7 +261,7 @@ async function main() {
                     contractInfo = deployment.getContractWithAddress(address);
                 }
                 if (contractInfo === undefined) {
-                    throw 'unknown contract';
+                    throw new Error('unknown contract');
                 }
 
                 const client = await createTonClient({ network: 'testnet' });
@@ -303,10 +298,10 @@ async function main() {
                     }),
             async ({ account, mnemonic, name, address }) => {
                 if (name === undefined && address === undefined) {
-                    throw '--name or --address must be presented!';
+                    throw new Error('--name or --address must be presented!');
                 }
                 if (name !== undefined && address !== undefined) {
-                    throw 'only one of --name or --address must be presented!';
+                    throw new Error('only one of --name or --address must be presented!');
                 }
                 const deployment = createDeployment();
                 let contractInfo;
@@ -317,7 +312,7 @@ async function main() {
                     contractInfo = deployment.getContractWithAddress(address);
                 }
                 if (contractInfo === undefined) {
-                    throw 'unknown contract';
+                    throw new Error('unknown contract');
                 }
 
                 const client = await createTonClient({ network: 'testnet' });
@@ -342,10 +337,10 @@ async function main() {
                     }),
             async ({ name, address }) => {
                 if (name === undefined && address === undefined) {
-                    throw '--name or --address must be presented!';
+                    throw new Error('--name or --address must be presented!');
                 }
                 if (name !== undefined && address !== undefined) {
-                    throw 'only one of --name or --address must be presented!';
+                    throw new Error('only one of --name or --address must be presented!');
                 }
                 const deployment = createDeployment();
                 let contractInfo;
@@ -356,7 +351,7 @@ async function main() {
                     contractInfo = deployment.getContractWithAddress(address);
                 }
                 if (contractInfo === undefined) {
-                    throw 'unknown contract';
+                    throw new Error('unknown contract');
                 }
                 const client = await createTonClient({ network: 'testnet' });
 

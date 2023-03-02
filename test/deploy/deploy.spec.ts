@@ -6,6 +6,7 @@ import {
     createAccountsDictionary,
     createKycForDeploy,
     decodeDomainName,
+    removeTonTopDomain,
 } from '../../src/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 
@@ -24,6 +25,9 @@ describe('Deploy', () => {
         ['user_3.ton', AccountState.Declined],
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
+
+    const initialStorageDict: [string, AccountState][] 
+        = initialAccounts.map(([domain, status]) => [removeTonTopDomain(domain), status]);
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
@@ -61,6 +65,6 @@ describe('Deploy', () => {
         for (const [acc, val] of accounts) {
             accStates.push([decodeDomainName(acc), val]);
         }
-        expect(accStates).toEqual(initialAccounts);
+        expect(accStates).toEqual(initialStorageDict);
     });
 });

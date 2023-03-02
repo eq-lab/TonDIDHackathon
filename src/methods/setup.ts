@@ -1,6 +1,6 @@
 import { TonClient } from 'ton';
 import { mnemonicToWalletKey } from 'ton-crypto';
-import { convertGramToNum, createKycContract } from '../common';
+import { convertGramToNum, convertPublickKeyStringToBuffer, createKycContract, createWalletContract, sleep } from '../common';
 
 export async function setup(
     client: TonClient,
@@ -15,6 +15,9 @@ export async function setup(
     const provider = await mnemonicToWalletKey(mnemonic.split(' '));
 
     const newProvider = newProviderPublicKey !== undefined ? newProviderPublicKey! : provider.publicKey.toString('hex');
+
+    // throws error if newProvider string is wrong
+    convertPublickKeyStringToBuffer(newProvider);
 
     const fee = newFee !== undefined ? newFee! : convertGramToNum(await kyc.getFee());
     await kyc.sendSetup(provider, newProvider, fee);

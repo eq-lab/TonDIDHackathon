@@ -9,6 +9,7 @@ import {
     decodeDomainName,
     encodeDomainName,
     ExitCodes,
+    removeTonTopDomain,
 } from '../../src/common';
 import { mnemonicNew, mnemonicToWalletKey, sha256, sign } from 'ton-crypto';
 import { beginCell } from 'ton-core';
@@ -29,6 +30,9 @@ describe('External::setAccState', () => {
         ['user_3.ton', AccountState.Declined],
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
+
+    const initialStorageDict: [string, AccountState][] 
+        = initialAccounts.map(([domain, status]) => [removeTonTopDomain(domain), status]);
 
     const newAcc = 'user_4.ton';
     const newAccState = AccountState.Approved;
@@ -78,8 +82,8 @@ describe('External::setAccState', () => {
         for (const [acc, val] of accounts) {
             accStates.push([decodeDomainName(acc), val]);
         }
-        const expected = initialAccounts;
-        expected.push([newAcc, newAccState]);
+        const expected = initialStorageDict;
+        expected.push([removeTonTopDomain(newAcc), newAccState]);
 
         expect(accStates).toEqual(expected);
     });

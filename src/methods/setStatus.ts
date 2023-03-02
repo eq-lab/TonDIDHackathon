@@ -19,5 +19,5 @@ export async function setStatus(
         throw 'wrong status number';
     }
 
-    await kyc.sendSetAccState(provider, domain, AccountState.Approved);
+    await kyc.sendSetAccState(provider, domain, statusNumber);
 }

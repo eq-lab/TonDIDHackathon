@@ -75,7 +75,7 @@ export async function createWalletContract(client: TonClient, key: KeyPair): Pro
     // open wallet v4 (notice the correct wallet version here)
     const wallet = WalletContractV4.create({ publicKey: key.publicKey, workchain: 0 });
     if (!(await client.isContractDeployed(wallet.address))) {
-        throw 'createWallet: wallet is not deployed';
+        throw new Error('createWallet: wallet is not deployed');
     }
     return wallet;
 }
@@ -128,14 +128,32 @@ export function convertGramToNum(gram: bigint): number {
 
 export function encodeDomainName(name: string): Buffer {
     if (!name.endsWith('.ton')) {
-        throw `domain name must contains .ton!`;
+        throw new Error(`domain name must contains .ton!`);
     }
-    const buffer = Buffer.from(name, 'utf8');
+    const buffer = Buffer.from(removeTonTopDomain(name), 'utf8');
     const filler = Buffer.alloc(DnsMaxLengthBytes - buffer.length, 0);
     return Buffer.concat([filler, buffer]);
+}
+
+export function removeTonTopDomain(domain: string) {
+    if (!domain.endsWith('.ton')) {
+        return domain;
+    }
+    return domain.slice(0, -4);
 }
 
 export function decodeDomainName(encodedName: Buffer): string {
     const startIndex = encodedName.findIndex((byte) => byte !== 0);
     return encodedName.subarray(startIndex).toString('utf8');
+}
+
+export function convertPublickKeyStringToBuffer(publicKey: string): Buffer {
+    if (publicKey.startsWith('0x')) {
+        publicKey = publicKey.slice(2);
+    }
+    const providerBuffer = Buffer.from(publicKey, 'hex');
+    if (providerBuffer.length != 32) {
+        throw new Error(`incorrect provider public key length! Expected: 32, actual: ${providerBuffer.length}`);
+    }
+    return providerBuffer;
 }
