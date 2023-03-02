@@ -4,7 +4,8 @@
   "author": "eq-lab",
   "private": true,
   "scripts": {
-    "compile": "npx func-js contracts/func-lib/stdlib.fc contracts/kyc.fc --boc bin/kyc.cell"
+    "compile": "npx func-js contracts/func-lib/stdlib.fc contracts/kyc.fc --boc bin/kyc.cell",
+    "build": "tsc --build"
   },
   "dependencies": {
     "@orbs-network/ton-access": "^2.2.2",

@@ -23,8 +23,6 @@ export enum ExitCodes {
 
 export const DnsMaxLengthBytes = 126;
 
-const deploymentPath = `data${path.sep}deployment.json`;
-
 export const AccountsDictionaryKey = Dictionary.Keys.Buffer(DnsMaxLengthBytes);
 export const AccountsDictionaryValue = Dictionary.Values.Uint(2);
 export type AccountsDictionary = Dictionary<Buffer, number>;
@@ -41,7 +39,7 @@ export interface Deployment {
     pushContract: (info: ContractInfo) => void;
 }
 
-export const createDeployment = (): Deployment => {
+export const createDeployment = (deploymentPath: string): Deployment => {
     const contracts: ContractInfo[] = JSON.parse(fs.readFileSync(deploymentPath, 'utf8'));
 
     const infoByName = new Map<string, ContractInfo>();

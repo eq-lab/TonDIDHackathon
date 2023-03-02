@@ -14,6 +14,7 @@ import {
     createTonClient,
     decodeDomainName,
 } from '@kyc/contracts/common';
+import { deploymentPath } from './common';
 
 async function main() {
     let argv = yargs
@@ -93,7 +94,7 @@ async function main() {
                 if (name !== undefined && address !== undefined) {
                     throw new Error('only one of --name or --address must be presented!');
                 }
-                const deployment = createDeployment();
+                const deployment = createDeployment(deploymentPath);
                 let contractInfo;
                 if (name !== undefined) {
                     contractInfo = deployment.getContractWithName(name);
@@ -136,7 +137,7 @@ async function main() {
                 if (name !== undefined && address !== undefined) {
                     throw new Error('only one of --name or --address must be presented!');
                 }
-                const deployment = createDeployment();
+                const deployment = createDeployment(deploymentPath);
                 let contractInfo;
                 if (name !== undefined) {
                     contractInfo = deployment.getContractWithName(name);
@@ -192,7 +193,7 @@ async function main() {
                 if (provider === undefined && fee === undefined) {
                     throw new Error('--provider or --fee must be presented!');
                 }
-                const deployment = createDeployment();
+                const deployment = createDeployment(deploymentPath);
                 let contractInfo;
                 if (name !== undefined) {
                     contractInfo = deployment.getContractWithName(name);
@@ -252,7 +253,7 @@ async function main() {
                 if (status === undefined) {
                     throw new Error('--status must be presented!');
                 }
-                const deployment = createDeployment();
+                const deployment = createDeployment(deploymentPath);
                 let contractInfo;
                 if (name !== undefined) {
                     contractInfo = deployment.getContractWithName(name);
@@ -303,7 +304,7 @@ async function main() {
                 if (name !== undefined && address !== undefined) {
                     throw new Error('only one of --name or --address must be presented!');
                 }
-                const deployment = createDeployment();
+                const deployment = createDeployment(deploymentPath);
                 let contractInfo;
                 if (name !== undefined) {
                     contractInfo = deployment.getContractWithName(name);
@@ -342,7 +343,7 @@ async function main() {
                 if (name !== undefined && address !== undefined) {
                     throw new Error('only one of --name or --address must be presented!');
                 }
-                const deployment = createDeployment();
+                const deployment = createDeployment(deploymentPath);
                 let contractInfo;
                 if (name !== undefined) {
                     contractInfo = deployment.getContractWithName(name);

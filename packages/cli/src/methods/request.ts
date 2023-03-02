@@ -1,17 +1,12 @@
 import { TonClient } from 'ton';
-import {
-    ContractInfo,
-    createDeployment,
-    createKycContract,
-    createWalletContract,
-    sleep,
-} from '@kyc/contracts/common';
+import { ContractInfo, createDeployment, createKycContract, createWalletContract, sleep } from '@kyc/contracts/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
+import { deploymentPath } from '../common';
 
 export async function request(client: TonClient, contractInfo: ContractInfo, mnemonic: string, account: string) {
     console.log(`\nRequest`);
 
-    const deployment = createDeployment();
+    const deployment = createDeployment(deploymentPath);
 
     if (deployment.getContractWithName(contractInfo.name) === undefined) {
         throw new Error('unknown contract!');
