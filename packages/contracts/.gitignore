@@ -1,0 +1,5 @@
+bin
+!bin/builded contract will be placed here
+
+node_modules
+dist

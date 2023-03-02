@@ -1,4 +1,0 @@
-contract:
-  data: contracts/fift/data.fif
-  func:
-    - contracts/kyc.fc
