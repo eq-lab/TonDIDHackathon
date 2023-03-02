@@ -67,7 +67,7 @@ async function main() {
                 }
                 const client = await createTonClient({ network: 'testnet' });
                 let providerBuffer = convertPublickKeyStringToBuffer(provider);
-                
+
                 await deploy(client, name, mnemonic, seqno, providerBuffer, fee, deposit, initDict);
             }
         )

@@ -26,8 +26,10 @@ describe('Deploy', () => {
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const initialStorageDict: [string, AccountState][] 
-        = initialAccounts.map(([domain, status]) => [removeTonTopDomain(domain), status]);
+    const initialStorageDict: [string, AccountState][] = initialAccounts.map(([domain, status]) => [
+        removeTonTopDomain(domain),
+        status,
+    ]);
 
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment

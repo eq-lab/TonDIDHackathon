@@ -29,8 +29,10 @@ describe('External::setup', () => {
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const initialStorageDict: [string, AccountState][] 
-        = initialAccounts.map(([domain, status]) => [removeTonTopDomain(domain), status]);
+    const initialStorageDict: [string, AccountState][] = initialAccounts.map(([domain, status]) => [
+        removeTonTopDomain(domain),
+        status,
+    ]);
 
     const newProviderMnemonics =
         'water nuclear buffalo again today lawn clock clinic isolate harbor armed pyramid aware snow state riot shock crunch hungry payment purity catalog present unable';

@@ -31,8 +31,10 @@ describe('External::setAccState', () => {
     ];
     const initialDict = createAccountsDictionary(initialAccounts);
 
-    const initialStorageDict: [string, AccountState][] 
-        = initialAccounts.map(([domain, status]) => [removeTonTopDomain(domain), status]);
+    const initialStorageDict: [string, AccountState][] = initialAccounts.map(([domain, status]) => [
+        removeTonTopDomain(domain),
+        status,
+    ]);
 
     const newAcc = 'user_4.ton';
     const newAccState = AccountState.Approved;

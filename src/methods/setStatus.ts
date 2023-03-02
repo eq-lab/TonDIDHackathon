@@ -3,9 +3,9 @@ import { mnemonicToWalletKey } from 'ton-crypto';
 import { AccountState, createKycContract } from '../common';
 
 export async function setStatus(
-    client: TonClient, 
-    contractAddress: string, 
-    mnemonic: string, 
+    client: TonClient,
+    contractAddress: string,
+    mnemonic: string,
     domain: string,
     statusNumber: number
 ) {
