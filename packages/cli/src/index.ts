@@ -13,7 +13,7 @@ import {
     createKycContract,
     createTonClient,
     decodeDomainName,
-} from '@kyc/contracts/src/common';
+} from '@kyc/contracts/common';
 
 async function main() {
     let argv = yargs

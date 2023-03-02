@@ -5,7 +5,7 @@ import {
     createKycContract,
     createWalletContract,
     sleep,
-} from '@kyc/contracts/src/common';
+} from '@kyc/contracts/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 
 export async function request(client: TonClient, contractInfo: ContractInfo, mnemonic: string, account: string) {

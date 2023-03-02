@@ -23,5 +23,13 @@
     "eslint": "^8.31.0",
     "eslint-config-prettier": "^8.6.0",
     "prettier": "^2.8.2"
+  },
+  "exports": {
+    "./common": "./dist/common/index.js"
+  },
+  "typesVersions": {
+    "*": {
+      "common": ["dist/common/index.d.ts"]
+    }
   }
 }

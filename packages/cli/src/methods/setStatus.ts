@@ -1,6 +1,6 @@
 import { TonClient } from 'ton';
 import { mnemonicToWalletKey } from 'ton-crypto';
-import { AccountState, createKycContract } from '@kyc/contracts/src/common';
+import { AccountState, createKycContract } from '@kyc/contracts/common';
 
 export async function setStatus(
     client: TonClient,

@@ -5,7 +5,7 @@ import {
     createKycForDeploy,
     createWalletContract,
     sleep,
-} from '@kyc/contracts/src/common';
+} from '@kyc/contracts/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 import { kycContractFileName } from '../common';
 
