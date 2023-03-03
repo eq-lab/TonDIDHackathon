@@ -98,10 +98,6 @@ export function createAccountsDictionary(initialStates?: [string, number][]): Ac
     const dict = Dictionary.empty(AccountsDictionaryKey, AccountsDictionaryValue);
     if (initialStates !== undefined) {
         for (const [account, state] of initialStates) {
-            let acc = account;
-            if (account.startsWith('0x')) {
-                acc = account.substring(2);
-            }
             dict.set(encodeDomainName(account), state);
         }
     }
