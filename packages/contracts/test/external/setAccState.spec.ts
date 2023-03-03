@@ -150,4 +150,41 @@ describe('External::setAccState', () => {
             expect(errorArgs![3].vmExitCode).toEqual(ExitCodes.WrongSeqno);
         }
     });
+
+    it('wrong args hash', async () => {
+        const seqno = (await kycContract.getSeqno());
+        const kycProvider = await mnemonicToWalletKey(mnemonics.split(' '));
+        const acc = encodeDomainName(newAcc);
+        const args = Buffer.concat([acc, Buffer.from([newAccState])]);
+        const wrongArgsHash = Buffer.alloc(32);
+        wrongArgsHash.fill(1);;
+
+        const tmp = Buffer.alloc(5);
+        tmp.writeUint8(ActionExternal.SetAccState);
+        tmp.writeUintBE(Number(seqno), 1, 4); 
+
+        const msg = Buffer.concat([tmp, wrongArgsHash]);
+        const msgHash = await sha256(msg);
+
+        const signature = sign(msgHash, kycProvider.secretKey);
+        const dataCell = beginCell().storeBuffer(args).endCell();
+        const messageBody = beginCell()
+            .storeBuffer(msg, 37)
+            .storeRef(dataCell)
+            .storeBuffer(signature)
+            .endCell();
+
+        let errorArgs: any[] | undefined;
+        try {
+            console.error = (...args) => {
+                errorArgs = args;
+            };
+            await kycContract.sendExternal(messageBody);
+        } catch (err) {
+            expect(err).toEqual(Error('Error executing transaction'));
+        } finally {
+            expect(errorArgs).toBeDefined(); // to be sure transaction failed
+            expect(errorArgs![3].vmExitCode).toEqual(ExitCodes.WrongArgsHash);
+        }
+    });
 });
