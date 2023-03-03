@@ -119,14 +119,20 @@ describe('External::setAccState', () => {
         const wrongSeqno = (await kycContract.getSeqno()) + 1n;
         const kycProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const acc = encodeDomainName(newAcc);
-        const msgBody = Buffer.concat([acc, Buffer.from([newAccState])]);
+        const args = Buffer.concat([acc, Buffer.from([newAccState])]);
+        const argsHash = await sha256(args);
 
-        const hash = await sha256(msgBody);
-        const signature = sign(hash, kycProvider.secretKey);
-        const dataCell = beginCell().storeBuffer(msgBody).endCell();
+        const tmp = Buffer.alloc(5);
+        tmp.writeUint8(ActionExternal.SetAccState);
+        tmp.writeUintBE(Number(wrongSeqno), 1, 4); 
+
+        const msg = Buffer.concat([tmp, argsHash]);
+        const msgHash = await sha256(msg);
+
+        const signature = sign(msgHash, kycProvider.secretKey);
+        const dataCell = beginCell().storeBuffer(args).endCell();
         const messageBody = beginCell()
-            .storeUint(ActionExternal.SetAccState, 4)
-            .storeUint(wrongSeqno, 32)
+            .storeBuffer(msg, 37)
             .storeRef(dataCell)
             .storeBuffer(signature)
             .endCell();

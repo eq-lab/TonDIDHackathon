@@ -75,7 +75,10 @@ describe('Internal::requestKyc', () => {
         }
         // console.log(`LOGS:`, logs);
         expect(logs.length).toEqual(1);
-        const startIdx = logs[0].indexOf('CS{Cell{00fd0') + 13;
+        // 0xfe = 0b1111111000_00 = 1016 + 2 * 0-bits
+        // 1016 bits =  8 bits operation + 1008 bits domain
+        const startIdx = logs[0].indexOf('CS{Cell{00fe0') + 'CS{Cell{00fe0'.length + 1;
+        // 252 = 1008 / 4 -- length of domain in hex
         const buff = Buffer.from(logs[0].slice(startIdx, startIdx + 253), 'hex');
         const domainName = decodeDomainName(buff);
 

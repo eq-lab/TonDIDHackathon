@@ -89,7 +89,7 @@ export class Kyc implements Contract {
     async sendRequestKyc(provider: ContractProvider, account: string, via: Sender): Promise<void> {
         const acc = encodeDomainName(account);
         const message = beginCell()
-            .storeUint(ActionInternal.RequestKyc, 4) // op
+            .storeUint(ActionInternal.RequestKyc, 8) // op
             .storeBuffer(acc, DnsMaxLengthBytes) // DNS
             .endCell();
 
@@ -115,14 +115,21 @@ export class Kyc implements Contract {
         const args = Buffer.alloc(47);
         args.write(newKycProvider, 'hex');
         args.writeBigUInt64BE(feeCoins, 39);
-        const hash = await sha256(args);
-        const signature = sign(hash, oldKycProvider.secretKey);
+        const argsHash = await sha256(args);
+
+        const tmp = Buffer.alloc(5);
+        tmp.writeUint8(ActionExternal.Setup);
+        tmp.writeUintBE(Number(currentSeqno), 1, 4);
+
+        const msg = Buffer.concat([tmp, argsHash]);
+        const msgHash = await sha256(msg);
+
+        const signature = sign(msgHash, oldKycProvider.secretKey);
 
         const messageBody = beginCell()
-            .storeUint(ActionExternal.Setup, 4)
-            .storeUint(currentSeqno, 32)
-            .storeRef(beginCell().storeBuffer(args).endCell())
+            .storeBuffer(msg, 37)
             .storeBuffer(signature)
+            .storeRef(beginCell().storeBuffer(args).endCell())
             .endCell();
 
         await provider.external(messageBody);
@@ -136,14 +143,21 @@ export class Kyc implements Contract {
     ): Promise<void> {
         const seqno = await this.getSeqno(provider);
         const acc = encodeDomainName(account);
-        const msgBody = Buffer.concat([acc, Buffer.from([state])]);
+        const args = Buffer.concat([acc, Buffer.from([state])]);
 
-        const hash = await sha256(msgBody);
-        const signature = sign(hash, kycProvider.secretKey);
-        const dataCell = beginCell().storeBuffer(msgBody).endCell();
+        const argsHash = await sha256(args);
+
+        const tmp = Buffer.alloc(5);
+        tmp.writeUint8(ActionExternal.SetAccState);
+        tmp.writeUintBE(Number(seqno), 1, 4); 
+
+        const msg = Buffer.concat([tmp, argsHash]);
+        const msgHash = await sha256(msg);
+
+        const signature = sign(msgHash, kycProvider.secretKey);
+        const dataCell = beginCell().storeBuffer(args).endCell();
         const messageBody = beginCell()
-            .storeUint(ActionExternal.SetAccState, 4)
-            .storeUint(seqno, 32)
+            .storeBuffer(msg, 37)
             .storeRef(dataCell)
             .storeBuffer(signature)
             .endCell();

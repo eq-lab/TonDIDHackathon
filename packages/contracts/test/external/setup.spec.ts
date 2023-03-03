@@ -123,12 +123,19 @@ describe('External::setup', () => {
         const args = Buffer.alloc(47);
         args.write(newProvider.publicKey.toString('hex'), 'hex');
         args.writeBigUInt64BE(feeCoins, 39);
-        const hash = await sha256(args);
-        const signature = sign(hash, oldProvider.secretKey);
+        const args_hash = await sha256(args);
+
+        const tmp = Buffer.alloc(5);
+        tmp.writeUint8(ActionExternal.Setup);
+        tmp.writeUintBE(Number(wrongSeqno), 1, 4);
+
+        const msg = Buffer.concat([tmp, args_hash]);
+        const msg_hash = await sha256(msg);
+
+        const signature = sign(msg_hash, oldProvider.secretKey);
 
         const messageBody = beginCell()
-            .storeUint(ActionExternal.Setup, 4)
-            .storeUint(wrongSeqno, 32)
+            .storeBuffer(msg, 37)
             .storeRef(beginCell().storeBuffer(args).endCell())
             .storeBuffer(signature)
             .endCell();
