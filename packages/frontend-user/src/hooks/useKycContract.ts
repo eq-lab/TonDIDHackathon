@@ -45,7 +45,6 @@ export function useKycContract() {
         fetchState,
         sendRequest: () => {
             if (!domainName) return;
-            //@ts-ignore
             return kycContract?.sendRequestKyc(domainName, sender);
         },
     };
