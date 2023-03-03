@@ -1,8 +1,8 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
 import { Kyc } from '@kyc/contracts/src/wrappers/kyc';
-import { AccountState, createAccountsDictionary, createKycForDeploy } from '@kyc/contracts/src/common';
+import { AccountState, createAccountsDictionary, createKycForDeploy } from '../../src/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
-import { kycContractFileName } from '../../src/common';
+import { kycContractFileName } from '../common';
 
 describe('External::getAccState', () => {
     let blockchain: Blockchain;

@@ -1,6 +1,6 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
 import '@ton-community/test-utils';
-import { ActionExternal, Kyc } from '@kyc/contracts/src/wrappers/kyc';
+import { ActionExternal, Kyc } from '../../src/wrappers/kyc';
 import {
     AccountState,
     convertGramToNum,
@@ -10,10 +10,10 @@ import {
     encodeDomainName,
     ExitCodes,
     removeTonTopDomain,
-} from '@kyc/contracts/src/common';
+} from '../../src/common';
 import { mnemonicNew, mnemonicToWalletKey, sha256, sign } from 'ton-crypto';
 import { beginCell } from 'ton-core';
-import { kycContractFileName } from '../../src/common';
+import { kycContractFileName } from '../common';
 
 describe('External::setAccState', () => {
     let blockchain: Blockchain;

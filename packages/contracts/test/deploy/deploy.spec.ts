@@ -1,5 +1,5 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
-import { Kyc } from '@kyc/contracts/src/wrappers/kyc';
+import { Kyc } from '../../src/wrappers/kyc';
 import {
     AccountState,
     convertGramToNum,
@@ -7,9 +7,9 @@ import {
     createKycForDeploy,
     decodeDomainName,
     removeTonTopDomain,
-} from '@kyc/contracts/src/common';
+} from '../../src/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
-import { kycContractFileName } from '../../src/common';
+import { kycContractFileName } from '../common';
 
 describe('Deploy', () => {
     let blockchain: Blockchain;
