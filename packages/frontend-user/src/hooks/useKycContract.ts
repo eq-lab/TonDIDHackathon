@@ -4,12 +4,13 @@ import { useAsyncInitialize } from './useAsyncInitialize';
 import { useTonConnect } from './useTonConnect';
 import { Address } from 'ton-core';
 import { Kyc } from '@kyc/contracts/kyc';
-import { AccountState } from '../common';
+import { AccountState } from '@kyc/contracts/common';
 
 export function useKycContract() {
     const client = useTonClient();
     const [domainName, setDomainName] = useState<string | undefined>();
     const [accountState, setAccountState] = useState<AccountState | undefined>();
+    const [kycContractAddress, setKycContractAddress] = useState<string>('');
     const { sender } = useTonConnect();
 
     const fetchState = async (): Promise<void> => {
@@ -25,11 +26,11 @@ export function useKycContract() {
 
     const kycContract = useAsyncInitialize(async () => {
         if (!client) return;
-        const contract = new Kyc(
-            Address.parse('EQBclHN5ORKnEuBdOKliHA1VwCJZsBgd-O_ulbR4PbVSpjH3') // replace with your address from tutorial 2 step 8
-        );
+        if (kycContractAddress === '') return;
+        const contract = new Kyc(Address.parse(kycContractAddress));
+        console.log(`Contract was selected. Address: ${kycContractAddress}`);
         return client.open(contract);
-    }, [client]);
+    }, [client, kycContractAddress]);
 
     useEffect(() => {
         fetchState();
@@ -37,7 +38,8 @@ export function useKycContract() {
 
     return {
         accountState,
-        kycContractAddress: kycContract?.address.toString(),
+        kycContractAddress,
+        setKycContractAddress,
         domainName,
         setDomainName: (domainName: string) => {
             setDomainName(domainName.toLowerCase());

@@ -3,11 +3,21 @@ import './App.css';
 import { TonConnectButton } from '@tonconnect/ui-react';
 import { useTonConnect } from './hooks/useTonConnect';
 import { useKycContract } from './hooks/useKycContract';
-import { stateToString } from './common';
+import { reduceAddress, stateToString } from './common';
+import Deployment from '../../contracts/data/deployment.json';
+import { ContractInfo } from '@kyc/contracts/dist/common';
 
 function App() {
     const { connected } = useTonConnect();
-    const { accountState, kycContractAddress, domainName, setDomainName, fetchState, sendRequest } = useKycContract();
+    const {
+        accountState,
+        kycContractAddress,
+        setKycContractAddress,
+        domainName,
+        setDomainName,
+        fetchState,
+        sendRequest,
+    } = useKycContract();
 
     return (
         <div className="App">
@@ -16,7 +26,23 @@ function App() {
 
                 <div className="Card">
                     <b>KYC contract address</b>
-                    <div className="Hint">{kycContractAddress?.slice(0, 30) + '...'}</div>
+                    <br />
+                    <select
+                        value={kycContractAddress}
+                        defaultValue={''}
+                        onChange={(e) => {
+                            setKycContractAddress(e.currentTarget.value);
+                        }}
+                    >
+                        <option value={''} disabled>
+                            Select contract...
+                        </option>
+                        {(Deployment as ContractInfo[]).map((x) => (
+                            <option key={`contract-${x.name}`} value={x.address}>{`${x.name} (${reduceAddress(
+                                x.address
+                            )})`}</option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className="Card">
