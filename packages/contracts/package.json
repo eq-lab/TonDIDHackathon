@@ -32,7 +32,8 @@
   },
   "exports": {
     "./common": "./dist/common/index.js",
-    "./kyc": "./dist/wrappers/kyc.js"
+    "./kyc": "./dist/wrappers/kyc.js",
+    "./deployment": "./data/deployment.json"
   },
   "typesVersions": {
     "*": {
