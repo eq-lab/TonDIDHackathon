@@ -39,30 +39,30 @@ fift -Icontracts/fift-lib -s contracts/externalIncrement.fif EQCqzqAl5Yg4sj0jk5B
 ```bash
 yarn install
 yarn build && yarn start deploy \
-  --name 'ui' \
-  --accounts 'щелощь.ton'
+  --name 'demo' \
+  --accounts 'mem.ton'
 ``` 
 
 #### Read KYC contract state
 ```bash
 yarn install
 yarn build && yarn start read-state \
-  --name 'ui'
+  --name 'demo'
 ``` 
 
 #### Read account state
 ```bash
 yarn install
 yarn build && yarn start read-acc-state \
-  --name 'ui' \
-  --account 'my_domain_name.ton'
+  --name 'demo' \
+  --account 'gavin.ton'
 ``` 
 
 #### Read all requested accounts
 ```bash
 yarn install
 yarn build && yarn start read-requested \
-  --name 'test_contract'
+  --name 'demo'
 ``` 
 
 #### Request KYC for TON Domain name
@@ -72,6 +72,15 @@ yarn build && yarn start send-request \
   --name 'test_contract' \
   --mnemonic "$(cat data/keys/EQDnO8IoL0E3By60vnMyunzOILU_nSAJo1DmBhEtfniUAj8C)" \
   --account 'my_domain_name.ton'
+``` 
+
+#### Set account state
+```bash
+yarn install
+yarn build && yarn start set-status \
+  --name 'demo' \
+  --domain 'gavin.ton' \
+  --status 'approved'
 ``` 
 
 #### toncli deploy

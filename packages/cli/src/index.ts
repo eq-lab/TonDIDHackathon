@@ -238,7 +238,7 @@ async function main() {
                     .option('status', {
                         describe: 'new status',
                         alias: 's',
-                        type: 'number',
+                        type: 'string',
                     }),
             async ({ name, address, mnemonic, domain, status }) => {
                 if (name === undefined && address === undefined) {
