@@ -20,7 +20,8 @@ function App() {
         requestFee,
         providerPublicKey,
         seqno,
-        fetchState,
+        fetchAccountState,
+        fetchContractState,
         sendRequest,
     } = useKycContract();
 
@@ -47,6 +48,13 @@ function App() {
                             )})`}</option>
                         ))}
                     </select>
+                    <button
+                        style={{ marginLeft: '1rem' }}
+                        disabled={kycContractAddress === ''}
+                        onClick={() => navigator.clipboard.writeText(kycContractAddress)}
+                    >
+                        Copy
+                    </button>
                 </div>
                 <div className="Card">
                     <b>Request fee</b>
@@ -54,7 +62,13 @@ function App() {
                 </div>
                 <div className="Card">
                     <b>KYC provider public key</b>
-                    <div>{providerPublicKey !== undefined ? '0x' + reduceAddress(providerPublicKey) : '-'}</div>
+                    <br />
+                    <a
+                        style={{ marginLeft: '1rem' }}
+                        onClick={() => navigator.clipboard.writeText('0x' + providerPublicKey)}
+                    >
+                        {providerPublicKey !== undefined ? '0x' + reduceAddress(providerPublicKey) : '-'}
+                    </a>
                 </div>
                 <div className="Card">
                     <b>seqno</b>
@@ -75,12 +89,20 @@ function App() {
                     <div>{accountState !== undefined ? stateToString(accountState) : '-'}</div>
                 </div>
                 <a
-                    className={`Button Active`}
+                    className={`Button ${domainName !== undefined ? 'Active' : 'Disabled'}`}
                     onClick={() => {
-                        fetchState();
+                        fetchAccountState();
                     }}
                 >
-                    Fetch state
+                    Fetch account state
+                </a>
+                <a
+                    className={`Button Active`}
+                    onClick={() => {
+                        fetchContractState();
+                    }}
+                >
+                    Fetch contract state
                 </a>
                 <a
                     className={`Button ${connected && accountState === 0 ? 'Active' : 'Disabled'}`}

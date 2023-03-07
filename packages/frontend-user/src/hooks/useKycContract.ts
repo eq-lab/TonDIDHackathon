@@ -17,7 +17,18 @@ export function useKycContract() {
     const [kycContractAddress, setKycContractAddress] = useState<string>('');
     const { sender } = useTonConnect();
 
-    const fetchState = async (): Promise<void> => {
+    const fetchAccountState = async (): Promise<void> => {
+        setAccountState(undefined);
+        if (!kycContract) return;
+        if (!domainName) return;
+        if (!domainName.endsWith('.ton')) {
+            return;
+        }
+        const state = await kycContract.getAccountState(domainName);
+        setAccountState(state);
+    };
+
+    const fetchContractState = async (): Promise<void> => {
         if (!kycContract) return;
         setRequestFee(undefined);
         setProviderPublicKey(undefined);
@@ -35,13 +46,6 @@ export function useKycContract() {
             setProviderPublicKey(provider);
             setSeqno(actualSeqno);
         });
-
-        if (!domainName) return;
-        if (!domainName.endsWith('.ton')) {
-            return;
-        }
-        const state = await kycContract.getAccountState(domainName);
-        setAccountState(state);
     };
 
     const kycContract = useAsyncInitialize(async () => {
@@ -61,9 +65,9 @@ export function useKycContract() {
         return kyc;
     }, [client, kycContractAddress]);
 
-    useEffect(() => {
-        fetchState();
-    }, [domainName]);
+    // useEffect(() => {
+    //     fetchAccountState();
+    // }, [domainName]);
 
     return {
         accountsStates,
@@ -77,7 +81,8 @@ export function useKycContract() {
         requestFee,
         providerPublicKey,
         seqno,
-        fetchState,
+        fetchAccountState,
+        fetchContractState,
         sendRequest: () => {
             if (!domainName) return;
             return kycContract?.sendRequestKyc(domainName, sender);
