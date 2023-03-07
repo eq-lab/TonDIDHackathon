@@ -1,5 +1,11 @@
 import { TonClient } from 'ton';
-import { ContractInfo, createDeployment, createKycContract, createWalletContract, sleep } from '@kyc/contracts/common';
+import {
+    ContractInfo,
+    createDeployment,
+    createKycContract,
+    createWalletContract,
+    sleep,
+} from '@kyc/contracts/dist/common/index.js';
 import { mnemonicToWalletKey } from 'ton-crypto';
 import { deploymentPath } from '../common';
 

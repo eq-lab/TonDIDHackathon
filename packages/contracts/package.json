@@ -31,9 +31,9 @@
     "prettier": "^2.8.2"
   },
   "exports": {
-    "./common": "./dist/common/index.js",
-    "./kyc": "./dist/wrappers/kyc.js",
-    "./deployment": "./data/deployment.json"
+    "./dist/common/index.js": "./dist/common/index.js",
+    "./dist/wrappers/kyc.js": "./dist/wrappers/kyc.js",
+    "./data/deployment.json": "./data/deployment.json"
   },
   "typesVersions": {
     "*": {

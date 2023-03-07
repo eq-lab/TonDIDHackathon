@@ -1,11 +1,13 @@
-import '@twa-dev/sdk';
+import React from 'react';
+import logo from './logo.svg';
 import './App.css';
-import { TonConnectButton } from '@tonconnect/ui-react';
+// import '@twa-dev/sdk/react';
 import { useTonConnect } from './hooks/useTonConnect';
 import { useKycContract } from './hooks/useKycContract';
+import { TonConnectButton } from '@tonconnect/ui-react';
+import { ContractInfo } from '@kyc/contracts/dist/common/index.js';
 import { reduceAddress, stateToString } from './common';
-import Deployment from '../../contracts/data/deployment.json';
-import { ContractInfo } from '@kyc/contracts/dist/common';
+import Deployment from '@kyc/contracts/data/deployment.json';
 
 function App() {
     const { connected } = useTonConnect();

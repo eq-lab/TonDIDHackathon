@@ -3,8 +3,8 @@ import { useTonClient } from './useTonClient';
 import { useAsyncInitialize } from './useAsyncInitialize';
 import { useTonConnect } from './useTonConnect';
 import { Address } from 'ton-core';
-import { Kyc } from '@kyc/contracts/kyc';
-import { AccountState } from '@kyc/contracts/common';
+import { Kyc } from '@kyc/contracts/dist/wrappers/kyc.js';
+import { AccountState } from '@kyc/contracts/dist/common/index.js';
 
 export function useKycContract() {
     const client = useTonClient();

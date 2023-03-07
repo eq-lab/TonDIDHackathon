@@ -13,7 +13,7 @@ import {
     createKycContract,
     createTonClient,
     decodeDomainName,
-} from '@kyc/contracts/common';
+} from '@kyc/contracts/dist/common/index.js';
 import { deploymentPath } from './common';
 
 async function main() {

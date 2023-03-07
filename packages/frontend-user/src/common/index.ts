@@ -1,4 +1,4 @@
-import { AccountState } from '@kyc/contracts/common';
+import { AccountState } from '@kyc/contracts/dist/common/index.js';
 
 export function stateToString(state: AccountState): string {
     switch (state) {

@@ -1,6 +1,10 @@
 import { TonClient } from 'ton';
 import { mnemonicToWalletKey } from 'ton-crypto';
-import { convertGramToNum, convertPublickKeyStringToBuffer, createKycContract } from '@kyc/contracts/common';
+import {
+    convertGramToNum,
+    convertPublickKeyStringToBuffer,
+    createKycContract,
+} from '@kyc/contracts/dist/common/index.js';
 
 export async function setup(
     client: TonClient,
