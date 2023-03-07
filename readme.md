@@ -37,50 +37,50 @@ fift -Icontracts/fift-lib -s contracts/externalIncrement.fif EQCqzqAl5Yg4sj0jk5B
 
 #### Deploy
 ```bash
-yarn install
-yarn build && yarn start deploy \
+yarn workspace @kyc/cli install
+yarn workspace @kyc/cli build && yarn workspace @kyc/cli start deploy \
   --name 'demo' \
   --accounts 'mem.ton'
 ``` 
 
 #### Read KYC contract state
 ```bash
-yarn install
-yarn build && yarn start read-state \
+yarn workspace @kyc/cli install
+yarn workspace @kyc/cli build && yarn workspace @kyc/cli start read-state \
   --name 'demo'
 ``` 
 
 #### Read account state
 ```bash
-yarn install
-yarn build && yarn start read-acc-state \
+yarn workspace @kyc/cli install
+yarn workspace @kyc/cli build && yarn workspace @kyc/cli start read-acc-state \
   --name 'demo' \
   --account 'gavin.ton'
 ``` 
 
 #### Read all requested accounts
 ```bash
-yarn install
-yarn build && yarn start read-requested \
+yarn workspace @kyc/cli install
+yarn workspace @kyc/cli build && yarn workspace @kyc/cli start read-requested \
   --name 'demo'
 ``` 
 
 #### Request KYC for TON Domain name
 ```bash
-yarn install
-yarn build && yarn start send-request \
-  --name 'test_contract' \
+yarn workspace @kyc/cli install
+yarn workspace @kyc/cli build && yarn workspace @kyc/cli start send-request \
+  --name 'demo' \
   --mnemonic "$(cat data/keys/EQDnO8IoL0E3By60vnMyunzOILU_nSAJo1DmBhEtfniUAj8C)" \
   --account 'my_domain_name.ton'
 ``` 
 
 #### Set account state
 ```bash
-yarn install
-yarn build && yarn start set-status \
+yarn workspace @kyc/cli install
+yarn workspace @kyc/cli build && yarn workspace @kyc/cli start set-status \
   --name 'demo' \
-  --domain 'gavin.ton' \
-  --status 'approved'
+  --domain 'gavin2.ton' \
+  --status 'declined'
 ``` 
 
 #### toncli deploy

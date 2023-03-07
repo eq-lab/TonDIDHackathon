@@ -4,19 +4,39 @@ import { useAsyncInitialize } from './useAsyncInitialize';
 import { useTonConnect } from './useTonConnect';
 import { Address } from 'ton-core';
 import { Kyc } from '@kyc/contracts/dist/wrappers/kyc.js';
-import { AccountState } from '@kyc/contracts/dist/common/index.js';
+import { AccountsDictionary, AccountState, createAccountsDictionary } from '@kyc/contracts/dist/common/index.js';
 
 export function useKycContract() {
     const client = useTonClient();
+    const [accountsStates, setAccountsStates] = useState<AccountsDictionary>(createAccountsDictionary());
     const [domainName, setDomainName] = useState<string | undefined>();
     const [accountState, setAccountState] = useState<AccountState | undefined>();
+    const [requestFee, setRequestFee] = useState<bigint | undefined>();
+    const [seqno, setSeqno] = useState<bigint | undefined>();
+    const [providerPublicKey, setProviderPublicKey] = useState<string | undefined>();
     const [kycContractAddress, setKycContractAddress] = useState<string>('');
     const { sender } = useTonConnect();
 
     const fetchState = async (): Promise<void> => {
         if (!kycContract) return;
-        if (!domainName) return;
+        setRequestFee(undefined);
+        setProviderPublicKey(undefined);
+        setSeqno(undefined);
         setAccountState(undefined);
+
+        Promise.all([
+            kycContract.getAccountsData(),
+            kycContract.getFee(),
+            kycContract.getProvider(),
+            kycContract.getSeqno(),
+        ]).then(([accounts, fee, provider, actualSeqno]) => {
+            setAccountsStates(accounts);
+            setRequestFee(fee);
+            setProviderPublicKey(provider);
+            setSeqno(actualSeqno);
+        });
+
+        if (!domainName) return;
         if (!domainName.endsWith('.ton')) {
             return;
         }
@@ -29,7 +49,16 @@ export function useKycContract() {
         if (kycContractAddress === '') return;
         const contract = new Kyc(Address.parse(kycContractAddress));
         console.log(`Contract was selected. Address: ${kycContractAddress}`);
-        return client.open(contract);
+        const kyc = client.open(contract);
+        Promise.all([kyc.getAccountsData(), kyc.getFee(), kyc.getProvider(), kyc.getSeqno()]).then(
+            ([accounts, fee, provider, actualSeqno]) => {
+                setAccountsStates(accounts);
+                setRequestFee(fee);
+                setProviderPublicKey(provider);
+                setSeqno(actualSeqno);
+            }
+        );
+        return kyc;
     }, [client, kycContractAddress]);
 
     useEffect(() => {
@@ -37,6 +66,7 @@ export function useKycContract() {
     }, [domainName]);
 
     return {
+        accountsStates,
         accountState,
         kycContractAddress,
         setKycContractAddress,
@@ -44,6 +74,9 @@ export function useKycContract() {
         setDomainName: (domainName: string) => {
             setDomainName(domainName.toLowerCase());
         },
+        requestFee,
+        providerPublicKey,
+        seqno,
         fetchState,
         sendRequest: () => {
             if (!domainName) return;
