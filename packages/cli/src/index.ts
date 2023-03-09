@@ -32,6 +32,7 @@ async function main() {
                         describe: 'Public key of KYC provider',
                         alias: 'p',
                         default: '0x0f52adfb686efdf38c28c1009af9efcd11b9a5ae186f5d8b8e62ab9065052c97',
+                        type: 'string',
                     })
                     .option('fee', {
                         describe: 'Fee amount in TON coins',
@@ -53,6 +54,7 @@ async function main() {
                         alias: 'm',
                         default:
                             'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle',
+                        type: 'string',
                     })
                     .option('name', {
                         describe: 'Contract name for fast searching',
@@ -170,6 +172,7 @@ async function main() {
                     .option('mnemonic', {
                         describe: 'Mnemonic for signer acc',
                         alias: 'm',
+                        type: 'string',
                         default:
                             'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle',
                     })
