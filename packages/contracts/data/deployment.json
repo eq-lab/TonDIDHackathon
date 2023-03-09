@@ -1,7 +1,12 @@
 [
   {
     "workchain": 0,
-    "name": "demo",
+    "name": "test_1",
     "address": "EQB8hH3XmCUSM8h0U2YZIfH-smxmikUSPPpi5ggpFWE1TOQ2"
+  },
+  {
+    "workchain": 0,
+    "name": "demo",
+    "address": "EQAfnplgCuaCofGPMXDYmkwfdDGzxaQaRJmpwZs1Bk9q6lCg"
   }
 ]
