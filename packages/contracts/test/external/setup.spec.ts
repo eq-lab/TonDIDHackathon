@@ -17,7 +17,7 @@ import { didIssuerContractFileName } from '../common';
 describe('External::setup', () => {
     let blockchain: Blockchain;
     let wallet1: SandboxContract<TreasuryContract>;
-    let kycContract: SandboxContract<DidIssuer>;
+    let didIssuerContract: SandboxContract<DidIssuer>;
 
     const initialSeqno = 17;
     const mnemonics =
@@ -42,7 +42,7 @@ describe('External::setup', () => {
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
         const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        const kyc = createDidIssuerForDeploy(
+        const didIssuer = createDidIssuerForDeploy(
             didIssuerContractFileName,
             initialSeqno,
             initialProvider.publicKey,
@@ -54,40 +54,40 @@ describe('External::setup', () => {
         blockchain = await Blockchain.create();
         wallet1 = await blockchain.treasury('user1');
 
-        // deploy kyc contract
-        kycContract = blockchain.openContract(kyc);
-        await kycContract.sendDeploy(wallet1.getSender(), 0.01);
+        // deploy DID issuer contract
+        didIssuerContract = blockchain.openContract(didIssuer);
+        await didIssuerContract.sendDeploy(wallet1.getSender(), 0.01);
     });
 
     it('seqno', async () => {
         const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
-        await kycContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
-        const seqno = await kycContract.getSeqno();
+        await didIssuerContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
+        const seqno = await didIssuerContract.getSeqno();
         expect(Number(seqno)).toEqual(initialSeqno + 1);
     });
 
     it('provider', async () => {
         const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
-        await kycContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
-        const provider = await kycContract.getProvider();
+        await didIssuerContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
+        const provider = await didIssuerContract.getProvider();
         expect(provider).toEqual(newProvider.publicKey.toString('hex'));
     });
 
     it('fee', async () => {
         const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
-        await kycContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
-        const fee = await kycContract.getFee();
+        await didIssuerContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
+        const fee = await didIssuerContract.getFee();
         expect(convertGramToNum(fee)).toEqual(newFee);
     });
 
     it('accounts', async () => {
         const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
-        await kycContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
-        const accounts = await kycContract.getAccountsData();
+        await didIssuerContract.sendSetup(oldProvider, newProvider.publicKey.toString('hex'), newFee);
+        const accounts = await didIssuerContract.getAccountsData();
 
         const accStates = [];
         for (const [acc, val] of accounts) {
@@ -98,7 +98,7 @@ describe('External::setup', () => {
 
     it('wrong signature', async () => {
         const wrongMnemonic = await mnemonicNew(24);
-        const wrongKycProvider = await mnemonicToWalletKey(wrongMnemonic);
+        const wrongDidProvider = await mnemonicToWalletKey(wrongMnemonic);
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
         let errorArgs: any[] | undefined;
 
@@ -106,7 +106,7 @@ describe('External::setup', () => {
             console.error = (...args) => {
                 errorArgs = args;
             };
-            await kycContract.sendSetup(wrongKycProvider, newProvider.publicKey.toString('hex'), newFee);
+            await didIssuerContract.sendSetup(wrongDidProvider, newProvider.publicKey.toString('hex'), newFee);
         } catch (err) {
             expect(err).toEqual(Error('Error executing transaction'));
         } finally {
@@ -118,7 +118,7 @@ describe('External::setup', () => {
     it('wrong seqno', async () => {
         const oldProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const newProvider = await mnemonicToWalletKey(newProviderMnemonics.split(' '));
-        const wrongSeqno = (await kycContract.getSeqno()) + 1n;
+        const wrongSeqno = (await didIssuerContract.getSeqno()) + 1n;
         const feeCoins = convertNumToGram(newFee);
         const args = Buffer.alloc(47);
         args.write(newProvider.publicKey.toString('hex'), 'hex');
@@ -145,7 +145,7 @@ describe('External::setup', () => {
             console.error = (...args) => {
                 errorArgs = args;
             };
-            await kycContract.sendExternal(messageBody);
+            await didIssuerContract.sendExternal(messageBody);
         } catch (err) {
             expect(err).toEqual(Error('Error executing transaction'));
         } finally {

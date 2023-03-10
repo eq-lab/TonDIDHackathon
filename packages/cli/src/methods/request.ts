@@ -28,9 +28,9 @@ export async function request(client: TonClient, contractInfo: ContractInfo, mne
     const seqno = await wallet.getSeqno();
 
     // send the request transaction
-    const kyc = createDidIssuerContract(contractInfo.address);
-    const kycContract = client.open(kyc);
-    await kycContract.sendRequest(account, sender);
+    const didIssuer = createDidIssuerContract(contractInfo.address);
+    const didIssuerContract = client.open(didIssuer);
+    await didIssuerContract.sendRequest(account, sender);
 
     // wait until confirmed
     let currentSeqno = seqno;

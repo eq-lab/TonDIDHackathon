@@ -11,13 +11,13 @@ export async function setStatus(
     statusStr: string
 ) {
     console.log(`\nSetting new status`);
-    const kycContract = await createDidIssuerContract(contractAddress);
-    const kyc = client.open(kycContract);
+    const didIssuerContract = await createDidIssuerContract(contractAddress);
+    const didIssuer = client.open(didIssuerContract);
     const provider = await mnemonicToWalletKey(mnemonic.split(' '));
     const status = parseAccountState(statusStr);
     if (status === undefined) {
         throw new Error('wrong account status');
     }
 
-    await kyc.sendSetAccState(provider, domain, status);
+    await didIssuer.sendSetAccState(provider, domain, status);
 }

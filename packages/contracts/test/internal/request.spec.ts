@@ -15,11 +15,11 @@ import { mnemonicToWalletKey } from 'ton-crypto';
 import * as util from 'util';
 import { didIssuerContractFileName } from '../common';
 
-describe('Internal::requestKyc', () => {
+describe('Internal::request', () => {
     let blockchain: Blockchain;
     let wallet1: SandboxContract<TreasuryContract>;
     let userWallet: SandboxContract<TreasuryContract>;
-    let kycContract: SandboxContract<DidIssuer>;
+    let didIssuerContract: SandboxContract<DidIssuer>;
 
     const initialSeqno = 17;
     const mnemonics =
@@ -38,7 +38,7 @@ describe('Internal::requestKyc', () => {
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
         const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        const kyc = createDidIssuerForDeploy(
+        const didIssuer = createDidIssuerForDeploy(
             didIssuerContractFileName,
             initialSeqno,
             initialProvider.publicKey,
@@ -50,17 +50,17 @@ describe('Internal::requestKyc', () => {
         blockchain = await Blockchain.create();
         wallet1 = await blockchain.treasury('user1');
         userWallet = await blockchain.treasury('userwallet1');
-        // deploy kyc contract
-        kycContract = blockchain.openContract(kyc);
-        await kycContract.sendDeploy(wallet1.getSender(), 1);
+        // deploy DID issuer contract
+        didIssuerContract = blockchain.openContract(didIssuer);
+        await didIssuerContract.sendDeploy(wallet1.getSender(), 1);
     });
 
     it('unknown account', async () => {
-        const stateBeforeRequest = await kycContract.getAccountState(newAccount);
+        const stateBeforeRequest = await didIssuerContract.getAccountState(newAccount);
         expect(stateBeforeRequest).toEqual(AccountState.Unknown);
 
         const userBalanceBefore = (await blockchain.getContract(userWallet.address)).balance;
-        const contractBalanceBefore = (await blockchain.getContract(kycContract.address)).balance;
+        const contractBalanceBefore = (await blockchain.getContract(didIssuerContract.address)).balance;
 
         const logs: string[] = [];
         const prevConsoleLog = console.log;
@@ -69,7 +69,7 @@ describe('Internal::requestKyc', () => {
         };
         let req: SendMessageResult;
         try {
-            req = await kycContract.sendRequest(newAccount, userWallet.getSender());
+            req = await didIssuerContract.sendRequest(newAccount, userWallet.getSender());
         } finally {
             console.log = prevConsoleLog;
         }
@@ -85,17 +85,17 @@ describe('Internal::requestKyc', () => {
         expect(domainName).toEqual(removeTonTopDomain(newAccount));
         expect(req.transactions).toHaveTransaction({
             from: userWallet.address,
-            to: kycContract.address,
+            to: didIssuerContract.address,
             success: true,
         });
 
-        const stateAfterRequest = await kycContract.getAccountState(newAccount);
+        const stateAfterRequest = await didIssuerContract.getAccountState(newAccount);
         expect(stateAfterRequest).toEqual(AccountState.Requested);
 
         const userBalanceAfter = (await blockchain.getContract(userWallet.address)).balance;
-        const contractBalanceAfter = (await blockchain.getContract(kycContract.address)).balance;
+        const contractBalanceAfter = (await blockchain.getContract(didIssuerContract.address)).balance;
 
-        const requiredFee = await kycContract.getFee();
+        const requiredFee = await didIssuerContract.getFee();
         const [userTx, updateStorageTx] = req.transactions;
 
         if (updateStorageTx.inMessage?.info.type !== 'internal') {
@@ -106,37 +106,26 @@ describe('Internal::requestKyc', () => {
 
         expect(userBalanceAfter).toEqual(expectedFees);
         expect(contractBalanceAfter).toEqual(contractBalanceBefore + requiredFee - updateStorageTx.totalFees.coins);
-
-        // console.log(
-        //     `User. Before: ${userBalanceBefore}, after: ${userBalanceAfter}. Delta: ${
-        //         userBalanceAfter - userBalanceBefore
-        //     }`
-        // );
-        // console.log(
-        //     `Kyc contract. Before: ${contractBalanceBefore}, after: ${contractBalanceAfter}. Delta: ${
-        //         contractBalanceAfter - contractBalanceBefore
-        //     }`
-        // );
     });
 
     it('already known account', async () => {
-        const stateBeforeRequest = await kycContract.getAccountState(initialAccounts[0][0]);
+        const stateBeforeRequest = await didIssuerContract.getAccountState(initialAccounts[0][0]);
         expect(stateBeforeRequest).toEqual(initialAccounts[0][1]);
 
         // must throw error
-        const req = await kycContract.sendRequest(initialAccounts[0][0], userWallet.getSender());
+        const req = await didIssuerContract.sendRequest(initialAccounts[0][0], userWallet.getSender());
         expect(req.transactions).toHaveTransaction({
             from: userWallet.address,
-            to: kycContract.address,
+            to: didIssuerContract.address,
             exitCode: ExitCodes.AccountAlreadyExisted,
         });
 
-        const stateAfterRequest = await kycContract.getAccountState(initialAccounts[0][0]);
+        const stateAfterRequest = await didIssuerContract.getAccountState(initialAccounts[0][0]);
         expect(stateAfterRequest).toEqual(initialAccounts[0][1]);
     });
 
     it('incorrect fee amount', async () => {
-        const stateBeforeRequest = await kycContract.getAccountState(newAccount);
+        const stateBeforeRequest = await didIssuerContract.getAccountState(newAccount);
         expect(stateBeforeRequest).toEqual(AccountState.Unknown);
 
         let acc = encodeDomainName(newAccount);
@@ -145,16 +134,16 @@ describe('Internal::requestKyc', () => {
             .storeBuffer(acc) // account
             .endCell();
 
-        const fee = (await kycContract.getFee()) - 10n;
+        const fee = (await didIssuerContract.getFee()) - 10n;
 
-        const req = await kycContract.sendInternal(message, fee, userWallet.getSender());
+        const req = await didIssuerContract.sendInternal(message, fee, userWallet.getSender());
         expect(req.transactions).toHaveTransaction({
             from: userWallet.address,
-            to: kycContract.address,
+            to: didIssuerContract.address,
             exitCode: ExitCodes.IncorrectFees,
         });
 
-        const stateAfterRequest = await kycContract.getAccountState(newAccount);
+        const stateAfterRequest = await didIssuerContract.getAccountState(newAccount);
         expect(stateAfterRequest).toEqual(AccountState.Unknown);
     });
 });

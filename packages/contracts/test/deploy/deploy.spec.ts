@@ -14,7 +14,7 @@ import { didIssuerContractFileName } from '../common';
 describe('Deploy', () => {
     let blockchain: Blockchain;
     let wallet1: SandboxContract<TreasuryContract>;
-    let kycContract: SandboxContract<DidIssuer>;
+    let didIssuerContract: SandboxContract<DidIssuer>;
 
     const initialSeqno = 17;
     const mnemonics =
@@ -35,7 +35,7 @@ describe('Deploy', () => {
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
         const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        const kyc = createDidIssuerForDeploy(
+        const didIssuer = createDidIssuerForDeploy(
             didIssuerContractFileName,
             initialSeqno,
             initialProvider.publicKey,
@@ -47,29 +47,29 @@ describe('Deploy', () => {
         blockchain = await Blockchain.create();
         wallet1 = await blockchain.treasury('user1');
 
-        // deploy kyc contract
-        kycContract = blockchain.openContract(kyc);
-        await kycContract.sendDeploy(wallet1.getSender(), 0.01);
+        // deploy DID issuer contract
+        didIssuerContract = blockchain.openContract(didIssuer);
+        await didIssuerContract.sendDeploy(wallet1.getSender(), 0.01);
     });
 
     it('seqno', async () => {
-        const seqno = await kycContract.getSeqno();
+        const seqno = await didIssuerContract.getSeqno();
         expect(Number(seqno)).toEqual(initialSeqno);
     });
 
     it('provider', async () => {
         const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        const provider = await kycContract.getProvider();
+        const provider = await didIssuerContract.getProvider();
         expect(provider).toEqual(initialProvider.publicKey.toString('hex'));
     });
 
     it('fee', async () => {
-        const fee = await kycContract.getFee();
+        const fee = await didIssuerContract.getFee();
         expect(convertGramToNum(fee)).toEqual(initialFee);
     });
 
     it('accounts', async () => {
-        const accounts = await kycContract.getAccountsData();
+        const accounts = await didIssuerContract.getAccountsData();
         const accStates = [];
         for (const [acc, val] of accounts) {
             accStates.push([decodeDomainName(acc), val]);

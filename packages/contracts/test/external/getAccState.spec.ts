@@ -7,7 +7,7 @@ import { didIssuerContractFileName } from '../common';
 describe('External::getAccState', () => {
     let blockchain: Blockchain;
     let wallet1: SandboxContract<TreasuryContract>;
-    let kycContract: SandboxContract<DidIssuer>;
+    let didIssuerContract: SandboxContract<DidIssuer>;
 
     const initialSeqno = 17;
     const mnemonics =
@@ -26,7 +26,7 @@ describe('External::getAccState', () => {
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
         const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        const kyc = createDidIssuerForDeploy(
+        const didIssuer = createDidIssuerForDeploy(
             didIssuerContractFileName,
             initialSeqno,
             initialProvider.publicKey,
@@ -38,20 +38,20 @@ describe('External::getAccState', () => {
         blockchain = await Blockchain.create();
         wallet1 = await blockchain.treasury('user1');
 
-        // deploy kyc contract
-        kycContract = blockchain.openContract(kyc);
-        await kycContract.sendDeploy(wallet1.getSender(), 0.01);
+        // deploy DID issuer contract
+        didIssuerContract = blockchain.openContract(didIssuer);
+        await didIssuerContract.sendDeploy(wallet1.getSender(), 0.01);
     });
 
     it('existed accounts', async () => {
         for (const [acc, expectedState] of initialAccounts) {
-            const actualState = await kycContract.getAccountState(acc);
+            const actualState = await didIssuerContract.getAccountState(acc);
             expect(Number(actualState)).toEqual(expectedState);
         }
     });
 
     it('not existed accounts', async () => {
-        const actualState = await kycContract.getAccountState(unknownAccount);
+        const actualState = await didIssuerContract.getAccountState(unknownAccount);
         expect(Number(actualState)).toEqual(AccountState.Unknown);
     });
 });

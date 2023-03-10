@@ -14,20 +14,20 @@ export async function deploy(
     contractName: string,
     mnemonic: string,
     initialSeqno: number,
-    kycProvider: Buffer,
+    didProvider: Buffer,
     fee: number,
     initialDeposit: number,
     accounts: AccountsDictionary
 ) {
     console.log(`\nDeploy`);
     const deployment = createDeployment(deploymentPath);
-    const kyc = createDidIssuerForDeploy(didIssuerContractFileName, initialSeqno, kycProvider, fee, accounts);
+    const didIssuer = createDidIssuerForDeploy(didIssuerContractFileName, initialSeqno, didProvider, fee, accounts);
     if (deployment.getContractWithName(contractName) !== undefined) {
         throw new Error('contract with this name already deployed!');
     }
     // exit if contract is already deployed
-    console.log('contract address:', kyc.address.toString());
-    if (await client.isContractDeployed(kyc.address)) {
+    console.log('contract address:', didIssuer.address.toString());
+    if (await client.isContractDeployed(didIssuer.address)) {
         throw new Error('Contract already deployed!');
     }
 
@@ -39,8 +39,8 @@ export async function deploy(
     const seqno = await wallet.getSeqno();
 
     // send the deploy transaction
-    const kycContract = client.open(kyc);
-    await kycContract.sendDeploy(sender, initialDeposit);
+    const didIssuerContract = client.open(didIssuer);
+    await didIssuerContract.sendDeploy(sender, initialDeposit);
 
     // wait until confirmed
     let currentSeqno = seqno;
@@ -50,5 +50,5 @@ export async function deploy(
         currentSeqno = await wallet.getSeqno();
     }
     console.log('deploy transaction confirmed!');
-    deployment.pushContract({ workchain: 0, name: contractName, address: kyc.address.toString() });
+    deployment.pushContract({ workchain: 0, name: contractName, address: didIssuer.address.toString() });
 }
