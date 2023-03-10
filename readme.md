@@ -1,21 +1,23 @@
+# DID issuer for TON hackathon 
+
 #### Compile packages
 ```bash
-yarn workspace @kyc/contracts install
-yarn workspace @kyc/contracts compile
-yarn workspace @kyc/contracts build
-yarn workspace @kyc/cli install
-yarn workspace @kyc/cli build
-yarn workspace @kyc/frontend-user install
+yarn workspace @did-issuer/contracts install
+yarn workspace @did-issuer/contracts compile
+yarn workspace @did-issuer/contracts build
+yarn workspace @did-issuer/cli install
+yarn workspace @did-issuer/cli build
+yarn workspace @did-issuer/frontend-user install
 ```
 
 #### Run unit tests
 ```bash
-yarn workspace @kyc/contracts test
+yarn workspace @did-issuer/contracts test
 ```
 
 #### Deploy new contract
 ```bash
-yarn workspace @kyc/cli start deploy \
+yarn workspace @did-issuer/cli start deploy \
   --name 'demo' \
   --fee '0.1' \
   --provider '0x0f52adfb686efdf38c28c1009af9efcd11b9a5ae186f5d8b8e62ab9065052c97' \
@@ -25,31 +27,31 @@ yarn workspace @kyc/cli start deploy \
 
 #### Run local frontend
 ```bash
-yarn workspace @kyc/frontend-user start
+yarn workspace @did-issuer/frontend-user start
 ```
 
-#### Read KYC contract state
+#### Read DID issuer contract state
 ```bash
-yarn workspace @kyc/cli start read-state \
+yarn workspace @did-issuer/cli start read-state \
   --name 'demo'
 ``` 
 
 #### Read account state
 ```bash
-yarn workspace @kyc/cli start read-acc-state \
+yarn workspace @did-issuer/cli start read-acc-state \
   --name 'demo' \
   --account 'gavin.ton'
 ``` 
 
 #### Read all requested accounts
 ```bash
-yarn workspace @kyc/cli start read-requested \
+yarn workspace @did-issuer/cli start read-requested \
   --name 'demo'
 ``` 
 
-#### Request KYC for TON Domain name
+#### Request check for TON Domain name
 ```bash
-yarn workspace @kyc/cli start send-request \
+yarn workspace @did-issuer/cli start send-request \
   --name 'demo' \
   --mnemonic "$(cat data/keys/EQDnO8IoL0E3By60vnMyunzOILU_nSAJo1DmBhEtfniUAj8C)" \
   --account 'my_domain_name.ton'
@@ -57,7 +59,7 @@ yarn workspace @kyc/cli start send-request \
 
 #### Set account state
 ```bash
-yarn workspace @kyc/cli start set-status \
+yarn workspace @did-issuer/cli start set-status \
   --name 'demo' \
   --domain 'gavin2.ton' \
   --status 'declined'
