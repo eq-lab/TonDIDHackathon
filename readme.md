@@ -1,4 +1,6 @@
 # DID issuer for TON hackathon 
+- [Video demonstration](https://youtu.be/l4auJRelwPg)
+- [DoraHacks](https://dorahacks.io/buidl/4454) 
 
 ## Introduction
 In our work we present a POC for the Digital Identity infrastructure on the Telegram Open Network. Our ultimate vision is a protocol that enables transparent and permissionless trust infrastructure for the future of web3 where the security and privacy of users’ verifiable credentials are achieved through a clever combination of blockchain technology and zero-knowledge proofs.
