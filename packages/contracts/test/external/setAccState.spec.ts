@@ -1,11 +1,11 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
 import '@ton-community/test-utils';
-import { ActionExternal, Kyc } from '../../src/wrappers/kyc';
+import { ActionExternal, DidIssuer } from '../../src/wrappers/DidIssuer';
 import {
     AccountState,
     convertGramToNum,
     createAccountsDictionary,
-    createKycForDeploy,
+    createDidIssuerForDeploy,
     decodeDomainName,
     encodeDomainName,
     ExitCodes,
@@ -13,12 +13,12 @@ import {
 } from '../../src/common';
 import { mnemonicNew, mnemonicToWalletKey, sha256, sign } from 'ton-crypto';
 import { beginCell } from 'ton-core';
-import { kycContractFileName } from '../common';
+import { didIssuerContractFileName } from '../common';
 
 describe('External::setAccState', () => {
     let blockchain: Blockchain;
     let wallet1: SandboxContract<TreasuryContract>;
-    let kycContract: SandboxContract<Kyc>;
+    let kycContract: SandboxContract<DidIssuer>;
 
     const initialSeqno = 17;
     const mnemonics =
@@ -43,8 +43,8 @@ describe('External::setAccState', () => {
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
         const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        const kyc = createKycForDeploy(
-            kycContractFileName,
+        const kyc = createDidIssuerForDeploy(
+            didIssuerContractFileName,
             initialSeqno,
             initialProvider.publicKey,
             initialFee,
@@ -124,18 +124,14 @@ describe('External::setAccState', () => {
 
         const tmp = Buffer.alloc(5);
         tmp.writeUint8(ActionExternal.SetAccState);
-        tmp.writeUintBE(Number(wrongSeqno), 1, 4); 
+        tmp.writeUintBE(Number(wrongSeqno), 1, 4);
 
         const msg = Buffer.concat([tmp, argsHash]);
         const msgHash = await sha256(msg);
 
         const signature = sign(msgHash, kycProvider.secretKey);
         const dataCell = beginCell().storeBuffer(args).endCell();
-        const messageBody = beginCell()
-            .storeBuffer(msg, 37)
-            .storeRef(dataCell)
-            .storeBuffer(signature)
-            .endCell();
+        const messageBody = beginCell().storeBuffer(msg, 37).storeRef(dataCell).storeBuffer(signature).endCell();
 
         let errorArgs: any[] | undefined;
         try {
@@ -152,27 +148,23 @@ describe('External::setAccState', () => {
     });
 
     it('wrong args hash', async () => {
-        const seqno = (await kycContract.getSeqno());
+        const seqno = await kycContract.getSeqno();
         const kycProvider = await mnemonicToWalletKey(mnemonics.split(' '));
         const acc = encodeDomainName(newAcc);
         const args = Buffer.concat([acc, Buffer.from([newAccState])]);
         const wrongArgsHash = Buffer.alloc(32);
-        wrongArgsHash.fill(1);;
+        wrongArgsHash.fill(1);
 
         const tmp = Buffer.alloc(5);
         tmp.writeUint8(ActionExternal.SetAccState);
-        tmp.writeUintBE(Number(seqno), 1, 4); 
+        tmp.writeUintBE(Number(seqno), 1, 4);
 
         const msg = Buffer.concat([tmp, wrongArgsHash]);
         const msgHash = await sha256(msg);
 
         const signature = sign(msgHash, kycProvider.secretKey);
         const dataCell = beginCell().storeBuffer(args).endCell();
-        const messageBody = beginCell()
-            .storeBuffer(msg, 37)
-            .storeRef(dataCell)
-            .storeBuffer(signature)
-            .endCell();
+        const messageBody = beginCell().storeBuffer(msg, 37).storeRef(dataCell).storeBuffer(signature).endCell();
 
         let errorArgs: any[] | undefined;
         try {

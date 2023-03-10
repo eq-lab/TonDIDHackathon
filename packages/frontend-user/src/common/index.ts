@@ -1,5 +1,5 @@
-import { AccountsDictionary, AccountState } from '@kyc/contracts/dist/common/index.js';
-import { decodeDomainName } from '@kyc/contracts/dist/common/index.js';
+import { AccountsDictionary, AccountState } from '@did-issuer/contracts/dist/common/index.js';
+import { decodeDomainName } from '@did-issuer/contracts/dist/common/index.js';
 
 export function stateToString(state: AccountState): string {
     switch (state) {

@@ -1,6 +1,6 @@
 import { TonClient } from 'ton';
 import { mnemonicToWalletKey } from 'ton-crypto';
-import { createKycContract } from '@kyc/contracts/dist/common/index.js';
+import { createDidIssuerContract } from '@did-issuer/contracts/dist/common/index.js';
 import { parseAccountState } from '../common';
 
 export async function setStatus(
@@ -11,7 +11,7 @@ export async function setStatus(
     statusStr: string
 ) {
     console.log(`\nSetting new status`);
-    const kycContract = await createKycContract(contractAddress);
+    const kycContract = await createDidIssuerContract(contractAddress);
     const kyc = client.open(kycContract);
     const provider = await mnemonicToWalletKey(mnemonic.split(' '));
     const status = parseAccountState(statusStr);

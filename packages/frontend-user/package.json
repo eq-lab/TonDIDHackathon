@@ -1,10 +1,10 @@
 {
-  "name": "@kyc/frontend-user",
+  "name": "@did-issuer/frontend-user",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@craco/craco": "^7.0.0",
-    "@kyc/contracts": "0.1.0",
+    "@did-issuer/contracts": "0.1.0",
     "@orbs-network/ton-access": "^2.3.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",

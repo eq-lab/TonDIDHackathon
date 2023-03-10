@@ -1,13 +1,13 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
-import { Kyc } from '@kyc/contracts/src/wrappers/kyc';
-import { AccountState, createAccountsDictionary, createKycForDeploy } from '../../src/common';
+import { DidIssuer } from '../../src/wrappers/DidIssuer';
+import { AccountState, createAccountsDictionary, createDidIssuerForDeploy } from '../../src/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
-import { kycContractFileName } from '../common';
+import { didIssuerContractFileName } from '../common';
 
 describe('External::getAccState', () => {
     let blockchain: Blockchain;
     let wallet1: SandboxContract<TreasuryContract>;
-    let kycContract: SandboxContract<Kyc>;
+    let kycContract: SandboxContract<DidIssuer>;
 
     const initialSeqno = 17;
     const mnemonics =
@@ -26,8 +26,8 @@ describe('External::getAccState', () => {
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
         const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        const kyc = createKycForDeploy(
-            kycContractFileName,
+        const kyc = createDidIssuerForDeploy(
+            didIssuerContractFileName,
             initialSeqno,
             initialProvider.publicKey,
             initialFee,

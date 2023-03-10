@@ -1,5 +1,5 @@
 {
-  "name": "@kyc/cli",
+  "name": "@did-issuer/cli",
   "author": "eq-lab",
   "version": "0.1.0",
   "main": "dist/index.js",
@@ -19,7 +19,7 @@
     "yargs": "^17.7.0"
   },
   "devDependencies": {
-    "@kyc/contracts": "0.1.0",
+    "@did-issuer/contracts": "0.1.0",
     "@types/node": "^18.13.0",
     "@types/yargs": "^17.0.22",
     "@typescript-eslint/eslint-plugin": "^5.48.1",

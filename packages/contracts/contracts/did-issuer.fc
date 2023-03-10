@@ -101,7 +101,7 @@ slice requested_status() inline {
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
     var (stored_seqno, provider, fee, cell accounts_data) = load_data();
     int operation = in_msg_body~load_uint(8);
-    if (operation == 0) { ;; request KYC check for account
+    if (operation == 0) { ;; request check for account
         throw_if(WRONG_MSG_VALUE, msg_value != fee);
         slice account = in_msg_body~load_bits(1008);
         (_, int existed) = accounts_data.dict_get?(1008, account);

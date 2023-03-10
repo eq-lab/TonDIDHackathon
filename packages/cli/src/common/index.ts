@@ -1,7 +1,7 @@
 import path from 'path';
-import { AccountState } from '@kyc/contracts/dist/common/index.js';
+import { AccountState } from '@did-issuer/contracts/dist/common/index.js';
 
-export const kycContractFileName = `..${path.sep}contracts${path.sep}bin${path.sep}kyc.cell`;
+export const didIssuerContractFileName = `..${path.sep}contracts${path.sep}bin${path.sep}did-issuer.cell`;
 export const deploymentPath = `..${path.sep}contracts${path.sep}data${path.sep}deployment.json`;
 
 export function parseAccountState(str: string): AccountState | undefined {

@@ -1,8 +1,7 @@
 import { Address, Cell, TonClient, WalletContractV4 } from 'ton';
 import * as fs from 'fs';
-import path from 'path';
 import { mnemonicToPrivateKey } from 'ton-crypto/dist/mnemonic/mnemonic';
-import { Kyc } from '../wrappers/kyc';
+import { DidIssuer } from '../wrappers/DidIssuer';
 import { KeyPair } from 'ton-crypto';
 import { Dictionary } from 'ton-core';
 import { Config, getHttpEndpoint } from '@orbs-network/ton-access';
@@ -79,20 +78,20 @@ export async function createWalletContract(client: TonClient, key: KeyPair): Pro
     return wallet;
 }
 
-export function createKycForDeploy(
+export function createDidIssuerForDeploy(
     contractFileName: string,
     initialSeqno: number,
-    kycProvider: Buffer,
+    didProvider: Buffer,
     fee: number,
     accounts: AccountsDictionary
-): Kyc {
-    const kycCode = Cell.fromBoc(fs.readFileSync(contractFileName))[0]; // compilation output from step 6
-    return Kyc.createForDeploy(kycCode, initialSeqno, kycProvider, fee, accounts);
+): DidIssuer {
+    const didIssuerCode = Cell.fromBoc(fs.readFileSync(contractFileName))[0]; // compilation output from step 6
+    return DidIssuer.createForDeploy(didIssuerCode, initialSeqno, didProvider, fee, accounts);
 }
 
-export function createKycContract(contractAddress: string): Kyc {
+export function createDidIssuerContract(contractAddress: string): DidIssuer {
     const counterAddress = Address.parse(contractAddress); // replace with your address from step 8
-    return new Kyc(counterAddress);
+    return new DidIssuer(counterAddress);
 }
 
 export function createAccountsDictionary(initialStates?: [string, number][]): AccountsDictionary {

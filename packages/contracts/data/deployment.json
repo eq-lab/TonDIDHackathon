@@ -8,5 +8,10 @@
     "workchain": 0,
     "name": "demo",
     "address": "EQAfnplgCuaCofGPMXDYmkwfdDGzxaQaRJmpwZs1Bk9q6lCg"
+  },
+  {
+    "workchain": 0,
+    "name": "demolet",
+    "address": "EQCFITG6kKHrxjsoIIgV1U0ju6Vxouvl4uEr1oIAmXFHi3y8"
   }
 ]

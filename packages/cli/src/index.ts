@@ -10,17 +10,17 @@ import {
     convertPublickKeyStringToBuffer,
     createAccountsDictionary,
     createDeployment,
-    createKycContract,
+    createDidIssuerContract,
     createTonClient,
     decodeDomainName,
-} from '@kyc/contracts/dist/common/index.js';
+} from '@did-issuer/contracts/dist/common/index.js';
 import { deploymentPath } from './common';
 
 async function main() {
     let argv = yargs
         .command(
             'deploy',
-            'Deploy the KYC contract.',
+            'Deploy the DID issuer contract.',
             (yargs: Argv) =>
                 yargs
                     .option('seqno', {
@@ -29,7 +29,7 @@ async function main() {
                         default: 1,
                     })
                     .option('provider', {
-                        describe: 'Public key of KYC provider',
+                        describe: 'Public key of DID provider',
                         alias: 'p',
                         default: '0x0f52adfb686efdf38c28c1009af9efcd11b9a5ae186f5d8b8e62ab9065052c97',
                         type: 'string',
@@ -45,7 +45,7 @@ async function main() {
                         default: 0.5,
                     })
                     .option('accounts', {
-                        describe: 'Already KYC-passed accounts. Format: address_0,address_1,address_N',
+                        describe: 'Already approved accounts. Format: address_0,address_1,address_N',
                         alias: 'a',
                         type: 'string',
                     })
@@ -76,7 +76,7 @@ async function main() {
         )
         .command(
             'read-state',
-            'Read state of KYC contract.',
+            'Read state of DID issuer contract.',
             (yargs: Argv) =>
                 yargs
                     .option('name', {
@@ -85,7 +85,7 @@ async function main() {
                         type: 'string',
                     })
                     .option('address', {
-                        describe: 'Base64-url address of KYC provider',
+                        describe: 'Base64-url address of DID issuer contract',
                         alias: 'a',
                         type: 'string',
                     }),
@@ -122,7 +122,7 @@ async function main() {
                         type: 'string',
                     })
                     .option('address', {
-                        describe: 'Base64-url address of KYC provider',
+                        describe: 'Base64-url address of DID issuer contract',
                         alias: 'a',
                         type: 'string',
                     })
@@ -156,7 +156,7 @@ async function main() {
         )
         .command(
             'setup',
-            'Sets up provider and fee params of KYC contract',
+            'Sets up provider and fee params of DID issuer contract',
             (yargs: Argv) =>
                 yargs
                     .option('name', {
@@ -165,7 +165,7 @@ async function main() {
                         type: 'string',
                     })
                     .option('address', {
-                        describe: 'Base64-url address of KYC provider',
+                        describe: 'Base64-url address of DID issuer contract',
                         alias: 'a',
                         type: 'string',
                     })
@@ -177,7 +177,7 @@ async function main() {
                             'casino trouble angle nature rigid describe lava angry cradle announce keep blanket what later public question master smooth mask visa salt middle announce gentle',
                     })
                     .option('provider', {
-                        describe: 'new KYC provider public key',
+                        describe: 'new DID provider public key',
                         alias: 'p',
                         type: 'string',
                     })
@@ -214,7 +214,7 @@ async function main() {
         )
         .command(
             'set-status',
-            'Sets up provider and fee params of KYC contract',
+            'Sets up provider and fee params of DID issuer contract',
             (yargs: Argv) =>
                 yargs
                     .option('name', {
@@ -223,7 +223,7 @@ async function main() {
                         type: 'string',
                     })
                     .option('address', {
-                        describe: 'Base64-url address of KYC provider',
+                        describe: 'Base64-url address of DID issuer contract',
                         alias: 'a',
                         type: 'string',
                     })
@@ -274,7 +274,7 @@ async function main() {
         )
         .command(
             'send-request',
-            'Request KYC for a new domain name.',
+            'Request check for a new domain name.',
             (yargs: Argv) =>
                 yargs
                     .option('account', {
@@ -296,7 +296,7 @@ async function main() {
                         required: true,
                     })
                     .option('address', {
-                        describe: 'Base64-url address of KYC provider',
+                        describe: 'Base64-url address of DID issuer contract',
                         alias: 'a',
                         type: 'string',
                     }),
@@ -325,7 +325,7 @@ async function main() {
         )
         .command(
             'read-requested',
-            'Print all KYC-requested accounts',
+            'Print all checks requested accounts',
             (yargs: Argv) =>
                 yargs
                     .option('name', {
@@ -335,7 +335,7 @@ async function main() {
                         required: true,
                     })
                     .option('address', {
-                        describe: 'Base64-url address of KYC provider',
+                        describe: 'Base64-url address of DID issuer contract',
                         alias: 'a',
                         type: 'string',
                     }),
@@ -359,17 +359,17 @@ async function main() {
                 }
                 const client = await createTonClient({ network: 'testnet' });
 
-                const kycContract = await createKycContract(contractInfo.address);
-                const kyc = client.open(kycContract);
-                const accounts = await kyc.getAccountsData();
+                const didIssuerContract = await createDidIssuerContract(contractInfo.address);
+                const didIssuer = client.open(didIssuerContract);
+                const accounts = await didIssuer.getAccountsData();
                 const requestedAccounts: string[] = [];
                 for (const [acc, state] of accounts) {
                     if (state === AccountState.Requested) {
                         requestedAccounts.push(decodeDomainName(acc));
                     }
                 }
-                console.log(`KYC-requested accounts (${requestedAccounts.length}):`);
-                requestedAccounts.forEach((acc) => console.log(`  ${acc}`));
+                console.log(`Requested accounts (${requestedAccounts.length}):`);
+                requestedAccounts.forEach((acc) => console.log(`  ${acc}.ton`));
             }
         );
     argv.parse();

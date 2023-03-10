@@ -1,21 +1,21 @@
 import { TonClient } from 'ton';
-import { AccountState, convertGramToNum, createKycContract } from '@kyc/contracts/dist/common/index.js';
+import { AccountState, convertGramToNum, createDidIssuerContract } from '@did-issuer/contracts/dist/common/index.js';
 
 export async function readState(client: TonClient, contractAddress: string) {
     console.log(`\nRead state`);
-    const kycContract = await createKycContract(contractAddress);
-    const kyc = client.open(kycContract);
+    const didIssuerContract = await createDidIssuerContract(contractAddress);
+    const didIssuer = client.open(didIssuerContract);
 
-    const kycProvider = await kyc.getProvider();
-    console.log(`kycProvider = ${kycProvider}`);
+    const didProvider = await didIssuer.getProvider();
+    console.log(`didProvider = ${didProvider}`);
 
-    const feeValue = await kyc.getFee();
+    const feeValue = await didIssuer.getFee();
     console.log(`fee = ${convertGramToNum(feeValue)}`);
 
-    const seqnoValue = await kyc.getSeqno();
+    const seqnoValue = await didIssuer.getSeqno();
     console.log(`seqno = ${seqnoValue.toString()}`);
 
-    const accounts = await kyc.getAccountsData();
+    const accounts = await didIssuer.getAccountsData();
     let numOfRequested = 0;
     let numOfApproved = 0;
     let numOfDeclined = 0;

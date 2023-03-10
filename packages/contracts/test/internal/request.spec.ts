@@ -1,11 +1,11 @@
 import { beginCell } from 'ton-core';
 import { Blockchain, SandboxContract, SendMessageResult, TreasuryContract } from '@ton-community/sandbox';
 import '@ton-community/test-utils';
-import { ActionInternal, Kyc } from '../../src/wrappers/kyc';
+import { ActionInternal, DidIssuer } from '../../src/wrappers/DidIssuer';
 import {
     AccountState,
     createAccountsDictionary,
-    createKycForDeploy,
+    createDidIssuerForDeploy,
     decodeDomainName,
     encodeDomainName,
     ExitCodes,
@@ -13,13 +13,13 @@ import {
 } from '../../src/common';
 import { mnemonicToWalletKey } from 'ton-crypto';
 import * as util from 'util';
-import { kycContractFileName } from '../common';
+import { didIssuerContractFileName } from '../common';
 
 describe('Internal::requestKyc', () => {
     let blockchain: Blockchain;
     let wallet1: SandboxContract<TreasuryContract>;
     let userWallet: SandboxContract<TreasuryContract>;
-    let kycContract: SandboxContract<Kyc>;
+    let kycContract: SandboxContract<DidIssuer>;
 
     const initialSeqno = 17;
     const mnemonics =
@@ -38,8 +38,8 @@ describe('Internal::requestKyc', () => {
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
         const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        const kyc = createKycForDeploy(
-            kycContractFileName,
+        const kyc = createDidIssuerForDeploy(
+            didIssuerContractFileName,
             initialSeqno,
             initialProvider.publicKey,
             initialFee,
@@ -69,7 +69,7 @@ describe('Internal::requestKyc', () => {
         };
         let req: SendMessageResult;
         try {
-            req = await kycContract.sendRequestKyc(newAccount, userWallet.getSender());
+            req = await kycContract.sendRequest(newAccount, userWallet.getSender());
         } finally {
             console.log = prevConsoleLog;
         }
@@ -124,7 +124,7 @@ describe('Internal::requestKyc', () => {
         expect(stateBeforeRequest).toEqual(initialAccounts[0][1]);
 
         // must throw error
-        const req = await kycContract.sendRequestKyc(initialAccounts[0][0], userWallet.getSender());
+        const req = await kycContract.sendRequest(initialAccounts[0][0], userWallet.getSender());
         expect(req.transactions).toHaveTransaction({
             from: userWallet.address,
             to: kycContract.address,
@@ -141,7 +141,7 @@ describe('Internal::requestKyc', () => {
 
         let acc = encodeDomainName(newAccount);
         const message = beginCell()
-            .storeUint(ActionInternal.RequestKyc, 4) // op
+            .storeUint(ActionInternal.Request, 4) // op
             .storeBuffer(acc) // account
             .endCell();
 

@@ -2,12 +2,12 @@ import { TonClient } from 'ton';
 import {
     AccountsDictionary,
     createDeployment,
-    createKycForDeploy,
+    createDidIssuerForDeploy,
     createWalletContract,
     sleep,
-} from '@kyc/contracts/dist/common/index.js';
+} from '@did-issuer/contracts/dist/common/index.js';
 import { mnemonicToWalletKey } from 'ton-crypto';
-import { deploymentPath, kycContractFileName } from '../common';
+import { deploymentPath, didIssuerContractFileName } from '../common';
 
 export async function deploy(
     client: TonClient,
@@ -21,7 +21,7 @@ export async function deploy(
 ) {
     console.log(`\nDeploy`);
     const deployment = createDeployment(deploymentPath);
-    const kyc = createKycForDeploy(kycContractFileName, initialSeqno, kycProvider, fee, accounts);
+    const kyc = createDidIssuerForDeploy(didIssuerContractFileName, initialSeqno, kycProvider, fee, accounts);
     if (deployment.getContractWithName(contractName) !== undefined) {
         throw new Error('contract with this name already deployed!');
     }

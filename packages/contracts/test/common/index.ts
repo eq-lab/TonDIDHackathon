@@ -1,3 +1,3 @@
 import path from 'path';
 
-export const kycContractFileName = `bin${path.sep}kyc.cell`;
+export const didIssuerContractFileName = `bin${path.sep}did-issuer.cell`;

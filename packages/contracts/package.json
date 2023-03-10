@@ -1,10 +1,10 @@
 {
-  "name": "@kyc/contracts",
+  "name": "@did-issuer/contracts",
   "version": "0.1.0",
   "author": "eq-lab",
   "private": true,
   "scripts": {
-    "compile": "npx func-js contracts/func-lib/stdlib.fc contracts/kyc.fc --boc bin/kyc.cell",
+    "compile": "npx func-js contracts/func-lib/stdlib.fc contracts/did-issuer.fc --boc bin/did-issuer.cell",
     "build": "tsc --build",
     "test": "npx jest test/*/*.spec.ts"
   },
@@ -32,13 +32,13 @@
   },
   "exports": {
     "./dist/common/index.js": "./dist/common/index.js",
-    "./dist/wrappers/kyc.js": "./dist/wrappers/kyc.js",
+    "./dist/wrappers/DidIssuer.js": "./dist/wrappers/DidIssuer.js",
     "./data/deployment.json": "./data/deployment.json"
   },
   "typesVersions": {
     "*": {
       "common": ["dist/common/index.d.ts"],
-      "kyc": ["dist/wrappers/kyc.d.ts"]
+      "DidIssuer": ["dist/wrappers/DidIssuer.d.ts"]
     }
   }
 }

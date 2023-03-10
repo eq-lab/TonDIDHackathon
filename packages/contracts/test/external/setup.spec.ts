@@ -1,23 +1,23 @@
 import { Blockchain, SandboxContract, TreasuryContract } from '@ton-community/sandbox';
-import { ActionExternal, Kyc } from '../../src/wrappers/kyc';
+import { ActionExternal, DidIssuer } from '../../src/wrappers/DidIssuer';
 import {
     AccountState,
     convertGramToNum,
     convertNumToGram,
     createAccountsDictionary,
-    createKycForDeploy,
+    createDidIssuerForDeploy,
     decodeDomainName,
     ExitCodes,
     removeTonTopDomain,
 } from '../../src/common';
 import { mnemonicNew, mnemonicToWalletKey, sha256, sign } from 'ton-crypto';
 import { beginCell } from 'ton-core';
-import { kycContractFileName } from '../common';
+import { didIssuerContractFileName } from '../common';
 
 describe('External::setup', () => {
     let blockchain: Blockchain;
     let wallet1: SandboxContract<TreasuryContract>;
-    let kycContract: SandboxContract<Kyc>;
+    let kycContract: SandboxContract<DidIssuer>;
 
     const initialSeqno = 17;
     const mnemonics =
@@ -42,8 +42,8 @@ describe('External::setup', () => {
     beforeEach(async () => {
         // prepare Counter's initial code and data cells for deployment
         const initialProvider = await mnemonicToWalletKey(mnemonics.split(' '));
-        const kyc = createKycForDeploy(
-            kycContractFileName,
+        const kyc = createDidIssuerForDeploy(
+            didIssuerContractFileName,
             initialSeqno,
             initialProvider.publicKey,
             initialFee,

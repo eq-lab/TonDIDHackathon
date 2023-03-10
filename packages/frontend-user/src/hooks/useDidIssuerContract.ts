@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTonClient } from './useTonClient';
 import { useAsyncInitialize } from './useAsyncInitialize';
 import { useTonConnect } from './useTonConnect';
 import { Address } from 'ton-core';
-import { Kyc } from '@kyc/contracts/dist/wrappers/kyc.js';
-import { AccountsDictionary, AccountState, createAccountsDictionary } from '@kyc/contracts/dist/common/index.js';
+import { DidIssuer } from '@did-issuer/contracts/dist/wrappers/DidIssuer.js';
+import { AccountsDictionary, AccountState, createAccountsDictionary } from '@did-issuer/contracts/dist/common/index.js';
 
-export function useKycContract() {
+export function useDidIssuerContract() {
     const client = useTonClient();
     const [accountsStates, setAccountsStates] = useState<AccountsDictionary>(createAccountsDictionary());
     const [domainName, setDomainName] = useState<string | undefined>();
@@ -14,32 +14,32 @@ export function useKycContract() {
     const [requestFee, setRequestFee] = useState<bigint | undefined>();
     const [seqno, setSeqno] = useState<bigint | undefined>();
     const [providerPublicKey, setProviderPublicKey] = useState<string | undefined>();
-    const [kycContractAddress, setKycContractAddress] = useState<string>('');
+    const [didIssuerContractAddress, setDidIssuerContractAddress] = useState<string>('');
     const { sender } = useTonConnect();
 
     const fetchAccountState = async (): Promise<void> => {
         setAccountState(undefined);
-        if (!kycContract) return;
+        if (!didIssuerContract) return;
         if (!domainName) return;
         if (!domainName.endsWith('.ton')) {
             return;
         }
-        const state = await kycContract.getAccountState(domainName);
+        const state = await didIssuerContract.getAccountState(domainName);
         setAccountState(state);
     };
 
     const fetchContractState = async (): Promise<void> => {
-        if (!kycContract) return;
+        if (!didIssuerContract) return;
         setRequestFee(undefined);
         setProviderPublicKey(undefined);
         setSeqno(undefined);
         setAccountState(undefined);
 
         Promise.all([
-            kycContract.getAccountsData(),
-            kycContract.getFee(),
-            kycContract.getProvider(),
-            kycContract.getSeqno(),
+            didIssuerContract.getAccountsData(),
+            didIssuerContract.getFee(),
+            didIssuerContract.getProvider(),
+            didIssuerContract.getSeqno(),
         ]).then(([accounts, fee, provider, actualSeqno]) => {
             setAccountsStates(accounts);
             setRequestFee(fee);
@@ -48,22 +48,25 @@ export function useKycContract() {
         });
     };
 
-    const kycContract = useAsyncInitialize(async () => {
+    const didIssuerContract = useAsyncInitialize(async () => {
         if (!client) return;
-        if (kycContractAddress === '') return;
-        const contract = new Kyc(Address.parse(kycContractAddress));
-        console.log(`Contract was selected. Address: ${kycContractAddress}`);
-        const kyc = client.open(contract);
-        Promise.all([kyc.getAccountsData(), kyc.getFee(), kyc.getProvider(), kyc.getSeqno()]).then(
-            ([accounts, fee, provider, actualSeqno]) => {
-                setAccountsStates(accounts);
-                setRequestFee(fee);
-                setProviderPublicKey(provider);
-                setSeqno(actualSeqno);
-            }
-        );
-        return kyc;
-    }, [client, kycContractAddress]);
+        if (didIssuerContractAddress === '') return;
+        const contract = new DidIssuer(Address.parse(didIssuerContractAddress));
+        console.log(`Contract was selected. Address: ${didIssuerContractAddress}`);
+        const didIssuer = client.open(contract);
+        Promise.all([
+            didIssuer.getAccountsData(),
+            didIssuer.getFee(),
+            didIssuer.getProvider(),
+            didIssuer.getSeqno(),
+        ]).then(([accounts, fee, provider, actualSeqno]) => {
+            setAccountsStates(accounts);
+            setRequestFee(fee);
+            setProviderPublicKey(provider);
+            setSeqno(actualSeqno);
+        });
+        return didIssuer;
+    }, [client, didIssuerContractAddress]);
 
     // useEffect(() => {
     //     fetchAccountState();
@@ -72,8 +75,8 @@ export function useKycContract() {
     return {
         accountsStates,
         accountState,
-        kycContractAddress,
-        setKycContractAddress,
+        didIssuerContractAddress,
+        setDidIssuerContractAddress,
         domainName,
         setDomainName: (domainName: string) => {
             setDomainName(domainName.toLowerCase());
@@ -85,7 +88,7 @@ export function useKycContract() {
         fetchContractState,
         sendRequest: () => {
             if (!domainName) return;
-            return kycContract?.sendRequestKyc(domainName, sender);
+            return didIssuerContract?.sendRequest(domainName, sender);
         },
     };
 }

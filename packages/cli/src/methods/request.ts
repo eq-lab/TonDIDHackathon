@@ -2,10 +2,10 @@ import { TonClient } from 'ton';
 import {
     ContractInfo,
     createDeployment,
-    createKycContract,
+    createDidIssuerContract,
     createWalletContract,
     sleep,
-} from '@kyc/contracts/dist/common/index.js';
+} from '@did-issuer/contracts/dist/common/index.js';
 import { mnemonicToWalletKey } from 'ton-crypto';
 import { deploymentPath } from '../common';
 
@@ -28,9 +28,9 @@ export async function request(client: TonClient, contractInfo: ContractInfo, mne
     const seqno = await wallet.getSeqno();
 
     // send the request transaction
-    const kyc = createKycContract(contractInfo.address);
+    const kyc = createDidIssuerContract(contractInfo.address);
     const kycContract = client.open(kyc);
-    await kycContract.sendRequestKyc(account, sender);
+    await kycContract.sendRequest(account, sender);
 
     // wait until confirmed
     let currentSeqno = seqno;

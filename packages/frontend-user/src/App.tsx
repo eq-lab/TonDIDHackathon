@@ -2,19 +2,19 @@ import React from 'react';
 import './App.css';
 // import '@twa-dev/sdk/react';
 import { useTonConnect } from './hooks/useTonConnect';
-import { useKycContract } from './hooks/useKycContract';
+import { useDidIssuerContract } from './hooks/useDidIssuerContract';
 import { TonConnectButton } from '@tonconnect/ui-react';
-import { AccountState, ContractInfo, convertGramToNum } from '@kyc/contracts/dist/common/index.js';
+import { AccountState, ContractInfo, convertGramToNum } from '@did-issuer/contracts/dist/common/index.js';
 import { filterAccByState, reduceAddress, stateToString } from './common';
-import Deployment from '@kyc/contracts/data/deployment.json';
+import Deployment from '@did-issuer/contracts/data/deployment.json';
 
 function App() {
     const { connected } = useTonConnect();
     const {
         accountsStates,
         accountState,
-        kycContractAddress,
-        setKycContractAddress,
+        didIssuerContractAddress,
+        setDidIssuerContractAddress,
         domainName,
         setDomainName,
         requestFee,
@@ -23,20 +23,20 @@ function App() {
         fetchAccountState,
         fetchContractState,
         sendRequest,
-    } = useKycContract();
+    } = useDidIssuerContract();
 
     return (
         <div className="App">
             <div className="Container">
                 <TonConnectButton />
                 <div className="Card">
-                    <b>KYC contract address</b>
+                    <b>DID issuer contract address</b>
                     <br />
                     <select
-                        value={kycContractAddress}
+                        value={didIssuerContractAddress}
                         defaultValue={''}
                         onChange={(e) => {
-                            setKycContractAddress(e.currentTarget.value);
+                            setDidIssuerContractAddress(e.currentTarget.value);
                         }}
                     >
                         <option value={''} disabled>
@@ -50,8 +50,8 @@ function App() {
                     </select>
                     <button
                         style={{ marginLeft: '1rem' }}
-                        disabled={kycContractAddress === ''}
-                        onClick={() => navigator.clipboard.writeText(kycContractAddress)}
+                        disabled={didIssuerContractAddress === ''}
+                        onClick={() => navigator.clipboard.writeText(didIssuerContractAddress)}
                     >
                         Copy
                     </button>
@@ -61,7 +61,7 @@ function App() {
                     <div>{requestFee !== undefined ? convertGramToNum(requestFee) : '-'}</div>
                 </div>
                 <div className="Card">
-                    <b>KYC provider public key</b>
+                    <b>DID provider public key</b>
                     <br />
                     <a
                         style={{ marginLeft: '1rem' }}
@@ -85,7 +85,7 @@ function App() {
                     />
                 </div>
                 <div className="Card">
-                    <b>KYC state</b>
+                    <b>Account state</b>
                     <div>{accountState !== undefined ? stateToString(accountState) : '-'}</div>
                 </div>
                 <a
@@ -110,7 +110,7 @@ function App() {
                         sendRequest();
                     }}
                 >
-                    Send KYC request
+                    Send check request
                 </a>
                 <h3>List of requested accounts:</h3>
                 {filterAccByState(accountsStates, AccountState.Requested).map((x) => (

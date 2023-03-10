@@ -1,12 +1,12 @@
 import { TonClient } from 'ton';
-import { AccountState, convertGramToNum, createKycContract } from '@kyc/contracts/dist/common/index.js';
+import { AccountState, createDidIssuerContract } from '@did-issuer/contracts/dist/common/index.js';
 
 export async function readAccState(client: TonClient, contractAddress: string, account: string) {
     console.log(`\nRead acc state`);
-    const kycContract = await createKycContract(contractAddress);
-    const kyc = client.open(kycContract);
+    const didIssuerContract = await createDidIssuerContract(contractAddress);
+    const didIssuer = client.open(didIssuerContract);
 
-    const state = await kyc.getAccountState(account);
+    const state = await didIssuer.getAccountState(account);
     let st = '';
     if (state == AccountState.Requested) {
         st = 'Requested';

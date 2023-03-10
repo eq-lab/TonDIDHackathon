@@ -17,26 +17,26 @@ export enum ActionExternal {
 }
 
 export enum ActionInternal {
-    RequestKyc = 0,
+    Request = 0,
 }
 
-export class Kyc implements Contract {
+export class DidIssuer implements Contract {
     static createForDeploy(
         code: Cell,
         initialSeqno: number,
-        kycProvider: Buffer,
+        didProvider: Buffer,
         fee: number,
         accounts: AccountsDictionary
-    ): Kyc {
+    ): DidIssuer {
         const data = beginCell()
             .storeUint(initialSeqno, 32)
-            .storeBuffer(kycProvider)
+            .storeBuffer(didProvider)
             .storeCoins(convertNumToGram(fee))
             .storeDict(accounts)
             .endCell();
         const workchain = 0; // deploy to workchain 0
         const address = contractAddress(workchain, { code, data });
-        return new Kyc(address, { code, data });
+        return new DidIssuer(address, { code, data });
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender, initialDeposit: number): Promise<void> {
@@ -48,8 +48,8 @@ export class Kyc implements Contract {
 
     async getProvider(provider: ContractProvider): Promise<string> {
         const { stack } = await provider.get('get_provider', []);
-        const kycProvider = stack.readBigNumber().toString(16);
-        return `${'0'.repeat(64 - kycProvider.length)}${kycProvider}`;
+        const didProvider = stack.readBigNumber().toString(16);
+        return `${'0'.repeat(64 - didProvider.length)}${didProvider}`;
     }
 
     async getFee(provider: ContractProvider): Promise<bigint> {
@@ -86,10 +86,10 @@ export class Kyc implements Contract {
         const isEmpty = stack.readNumber();
         return isEmpty !== 0;
     }
-    async sendRequestKyc(provider: ContractProvider, account: string, via: Sender): Promise<void> {
+    async sendRequest(provider: ContractProvider, account: string, via: Sender): Promise<void> {
         const acc = encodeDomainName(account);
         const message = beginCell()
-            .storeUint(ActionInternal.RequestKyc, 8) // op
+            .storeUint(ActionInternal.Request, 8) // op
             .storeBuffer(acc, DnsMaxLengthBytes) // DNS
             .endCell();
 
@@ -106,14 +106,14 @@ export class Kyc implements Contract {
 
     async sendSetup(
         provider: ContractProvider,
-        oldKycProvider: KeyPair,
-        newKycProvider: string,
+        oldDidProvider: KeyPair,
+        newDidProvider: string,
         fee: number
     ): Promise<void> {
         const currentSeqno = await this.getSeqno(provider);
         const feeCoins = convertNumToGram(fee);
         const args = Buffer.alloc(47);
-        args.write(newKycProvider, 'hex');
+        args.write(newDidProvider, 'hex');
         args.writeBigUInt64BE(feeCoins, 39);
         const argsHash = await sha256(args);
 
@@ -124,7 +124,7 @@ export class Kyc implements Contract {
         const msg = Buffer.concat([tmp, argsHash]);
         const msgHash = await sha256(msg);
 
-        const signature = sign(msgHash, oldKycProvider.secretKey);
+        const signature = sign(msgHash, oldDidProvider.secretKey);
 
         const messageBody = beginCell()
             .storeBuffer(msg, 37)
@@ -137,7 +137,7 @@ export class Kyc implements Contract {
 
     async sendSetAccState(
         provider: ContractProvider,
-        kycProvider: KeyPair,
+        didProvider: KeyPair,
         account: string,
         state: AccountState
     ): Promise<void> {
@@ -149,18 +149,14 @@ export class Kyc implements Contract {
 
         const tmp = Buffer.alloc(5);
         tmp.writeUint8(ActionExternal.SetAccState);
-        tmp.writeUintBE(Number(seqno), 1, 4); 
+        tmp.writeUintBE(Number(seqno), 1, 4);
 
         const msg = Buffer.concat([tmp, argsHash]);
         const msgHash = await sha256(msg);
 
-        const signature = sign(msgHash, kycProvider.secretKey);
+        const signature = sign(msgHash, didProvider.secretKey);
         const dataCell = beginCell().storeBuffer(args).endCell();
-        const messageBody = beginCell()
-            .storeBuffer(msg, 37)
-            .storeRef(dataCell)
-            .storeBuffer(signature)
-            .endCell();
+        const messageBody = beginCell().storeBuffer(msg, 37).storeRef(dataCell).storeBuffer(signature).endCell();
 
         await provider.external(messageBody);
     }
