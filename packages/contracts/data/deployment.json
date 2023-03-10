@@ -6,12 +6,17 @@
   },
   {
     "workchain": 0,
-    "name": "demo",
+    "name": "test_2",
     "address": "EQAfnplgCuaCofGPMXDYmkwfdDGzxaQaRJmpwZs1Bk9q6lCg"
   },
   {
     "workchain": 0,
-    "name": "demolet",
+    "name": "test_3",
     "address": "EQCFITG6kKHrxjsoIIgV1U0ju6Vxouvl4uEr1oIAmXFHi3y8"
+  },
+  {
+    "workchain": 0,
+    "name": "demo",
+    "address": "EQAvnbLAv4W2pnW54OcNIpgxODI7n969v8vlZB2I5tPHVCiI"
   }
 ]
